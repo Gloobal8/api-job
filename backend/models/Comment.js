@@ -1,0 +1,220 @@
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+
+// Path to the file that will store the comments
+const dataPath = path.join(__dirname, '../data/comments.json');
+
+// Ensure the data directory and file exist
+if (!fs.existsSync(path.dirname(dataPath))) {
+  fs.mkdirSync(path.dirname(dataPath), { recursive: true });
+}
+
+if (!fs.existsSync(dataPath)) {
+  fs.writeFileSync(dataPath, JSON.stringify([]));
+}
+
+class Comment {
+  constructor(data) {
+    this.id = data.id || uuidv4();
+    this.postId = data.postId;
+    this.userId = data.userId;
+    this.userName = data.userName;
+    this.userEmail = data.userEmail;
+    this.content = data.content;
+    this.status = data.status || 'pending'; // pending, approved, spam
+    this.parentId = data.parentId || null; // For threaded comments
+    this.createdAt = data.createdAt || new Date().toISOString();
+    this.updatedAt = data.updatedAt || new Date().toISOString();
+  }
+
+  // Validate comment data
+  static validateComment(data) {
+    const errors = [];
+
+    if (!data.postId) {
+      errors.push('Post ID is required');
+    }
+
+    if (!data.content || typeof data.content !== 'string') {
+      errors.push('Content is required and must be a string');
+    }
+
+    if (!data.userName || typeof data.userName !== 'string') {
+      errors.push('User name is required and must be a string');
+    }
+
+    if (data.status && !['pending', 'approved', 'spam'].includes(data.status)) {
+      errors.push('Status must be one of: pending, approved, spam');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors
+    };
+  }
+
+  // Get all comments with optional filtering
+  static findAll(filters = {}) {
+    const comments = JSON.parse(fs.readFileSync(dataPath));
+    
+    return comments.filter(comment => {
+      // Filter by status
+      if (filters.status && comment.status !== filters.status) {
+        return false;
+      }
+      
+      // Filter by post
+      if (filters.postId && comment.postId !== filters.postId) {
+        return false;
+      }
+      
+      // Filter by user
+      if (filters.userId && comment.userId !== filters.userId) {
+        return false;
+      }
+      
+      // Filter by parent (for threaded comments)
+      if (filters.parentId !== undefined) {
+        if (filters.parentId === null) {
+          return comment.parentId === null;
+        } else {
+          return comment.parentId === filters.parentId;
+        }
+      }
+      
+      return true;
+    });
+  }
+
+  // Get a comment by ID
+  static findById(id) {
+    const comments = JSON.parse(fs.readFileSync(dataPath));
+    return comments.find(comment => comment.id === id);
+  }
+
+  // Get comments for a specific post
+  static findByPost(postId, approvedOnly = true) {
+    const filters = { postId };
+    if (approvedOnly) {
+      filters.status = 'approved';
+    }
+    return this.findAll(filters);
+  }
+
+  // Get top-level comments for a post (no parent)
+  static findTopLevelByPost(postId, approvedOnly = true) {
+    const filters = { postId, parentId: null };
+    if (approvedOnly) {
+      filters.status = 'approved';
+    }
+    return this.findAll(filters);
+  }
+
+  // Get replies to a comment
+  static findReplies(commentId, approvedOnly = true) {
+    const filters = { parentId: commentId };
+    if (approvedOnly) {
+      filters.status = 'approved';
+    }
+    return this.findAll(filters);
+  }
+
+  // Create a new comment
+  static create(data) {
+    const validation = this.validateComment(data);
+    if (!validation.valid) {
+      throw new Error(`Invalid comment data: ${validation.errors.join(', ')}`);
+    }
+
+    const comments = JSON.parse(fs.readFileSync(dataPath));
+    const newComment = new Comment(data);
+    comments.push(newComment);
+    
+    fs.writeFileSync(dataPath, JSON.stringify(comments, null, 2));
+    return newComment;
+  }
+
+  // Update a comment
+  static update(id, data) {
+    const comments = JSON.parse(fs.readFileSync(dataPath));
+    const index = comments.findIndex(comment => comment.id === id);
+    
+    if (index === -1) {
+      throw new Error('Comment not found');
+    }
+    
+    // Update the comment
+    const updatedComment = {
+      ...comments[index],
+      ...data,
+      updatedAt: new Date().toISOString()
+    };
+    
+    comments[index] = updatedComment;
+    fs.writeFileSync(dataPath, JSON.stringify(comments, null, 2));
+    
+    return updatedComment;
+  }
+
+  // Delete a comment
+  static delete(id) {
+    const comments = JSON.parse(fs.readFileSync(dataPath));
+    const index = comments.findIndex(comment => comment.id === id);
+    
+    if (index === -1) {
+      throw new Error('Comment not found');
+    }
+    
+    // Also delete all replies to this comment
+    const commentId = comments[index].id;
+    const remainingComments = comments.filter(comment => 
+      comment.id !== commentId && comment.parentId !== commentId
+    );
+    
+    fs.writeFileSync(dataPath, JSON.stringify(remainingComments, null, 2));
+    
+    return { success: true };
+  }
+
+  // Approve a comment
+  static approve(id) {
+    const comment = this.findById(id);
+    if (!comment) {
+      throw new Error('Comment not found');
+    }
+    
+    return this.update(id, { status: 'approved' });
+  }
+
+  // Mark a comment as spam
+  static markAsSpam(id) {
+    const comment = this.findById(id);
+    if (!comment) {
+      throw new Error('Comment not found');
+    }
+    
+    return this.update(id, { status: 'spam' });
+  }
+
+  // Get threaded comments for a post
+  static getThreadedComments(postId) {
+    const allComments = this.findByPost(postId);
+    const topLevelComments = allComments.filter(comment => !comment.parentId);
+    
+    const buildReplies = (parentId) => {
+      const replies = allComments.filter(comment => comment.parentId === parentId);
+      return replies.map(reply => ({
+        ...reply,
+        replies: buildReplies(reply.id)
+      }));
+    };
+    
+    return topLevelComments.map(comment => ({
+      ...comment,
+      replies: buildReplies(comment.id)
+    }));
+  }
+}
+
+module.exports = Comment;

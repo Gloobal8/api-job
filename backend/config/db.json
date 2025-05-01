@@ -1,0 +1,236 @@
+{
+  "jobs": [
+    {
+      "id": 1,
+      "title": "Frontend Developer",
+      "company_id": 1,
+      "location": "Madrid, España",
+      "type": "Full-time",
+      "description": "We are looking for a skilled Frontend Developer to join our team.",
+      "requirements": "3+ years of experience with Vue.js, HTML, CSS, and JavaScript.",
+      "salary": "€40,000 - €55,000",
+      "featured": true,
+      "created_at": "2025-04-15T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Backend Developer",
+      "company_id": 2,
+      "location": "Barcelona, España",
+      "type": "Full-time",
+      "description": "Join our backend team to build scalable APIs and services.",
+      "requirements": "Experience with Node.js, Express, and MongoDB.",
+      "salary": "€45,000 - €60,000",
+      "featured": true,
+      "created_at": "2025-04-16T09:30:00Z"
+    },
+    {
+      "id": 3,
+      "title": "Full Stack Developer",
+      "company_id": 3,
+      "location": "Valencia, España",
+      "type": "Full-time",
+      "description": "Looking for a Full Stack Developer to work on exciting projects.",
+      "requirements": "Experience with Vue.js, Node.js, and database technologies.",
+      "salary": "€50,000 - €65,000",
+      "featured": true,
+      "created_at": "2025-04-17T11:15:00Z"
+    }
+  ],
+  "companies": [
+    {
+      "id": 1,
+      "name": "Tech Innovators",
+      "logo": "/MEVN/frontend/public/images/companies/company-cover-image-150x150.png",
+      "website": "https://techinnovators.example.com",
+      "description": "A leading technology company focused on innovation.",
+      "location": "Madrid, España",
+      "industry": "Technology",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "name": "Digital Solutions",
+      "logo": "/MEVN/frontend/public/images/companies/company-cover-image-150x150.png",
+      "website": "https://digitalsolutions.example.com",
+      "description": "Providing cutting-edge digital solutions for businesses.",
+      "location": "Barcelona, España",
+      "industry": "IT Services",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "name": "Creative Web",
+      "logo": "/MEVN/frontend/public/images/companies/company-cover-image-150x150.png",
+      "website": "https://creativeweb.example.com",
+      "description": "A creative web development agency.",
+      "location": "Valencia, España",
+      "industry": "Web Development",
+      "featured": true
+    },
+    {
+      "id": 4,
+      "name": "Data Insights",
+      "logo": "/MEVN/frontend/public/images/companies/company-cover-image-150x150.png",
+      "website": "https://datainsights.example.com",
+      "description": "Specializing in data analytics and insights.",
+      "location": "Sevilla, España",
+      "industry": "Data Analytics",
+      "featured": true
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "password": "hashed_password",
+      "role": "jobseeker",
+      "created_at": "2025-04-10T08:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "password": "hashed_password",
+      "role": "employer",
+      "company_id": 1,
+      "created_at": "2025-04-11T09:30:00Z"
+    },
+    {
+      "id": "db019b0e-7906-49cb-92a0-85ddc5879baa",
+      "name": "gonzalo de villa",
+      "email": "g.devillamor@gmail.com",
+      "password": "$2a$08$96datm0XXoFW6xRcHCi95OTabaL5Ywz1.CpN0Hn7vJSzMaxkkmopm",
+      "role": "jobseeker",
+      "createdAt": "2025-04-30T05:09:19.352Z",
+      "updatedAt": "2025-04-30T05:09:19.352Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": 1,
+      "job_id": 1,
+      "user_id": 1,
+      "cover_letter": "I am very interested in this position...",
+      "status": "pending",
+      "created_at": "2025-04-18T14:00:00Z"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Carlos Rodríguez",
+      "position": "Frontend Developer",
+      "company": "Tech Innovators",
+      "text": "Found my dream job through this platform. The process was smooth and efficient!",
+      "avatar": "/MEVN/frontend/public/images/testimonials/1.png",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "name": "María González",
+      "position": "UX Designer",
+      "company": "Creative Web",
+      "text": "As a designer, I was able to find the perfect job that matched my skills and interests.",
+      "avatar": "/MEVN/frontend/public/images/testimonials/1.png",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "name": "Alejandro Martínez",
+      "position": "Backend Developer",
+      "company": "Digital Solutions",
+      "text": "The job board made it easy to find companies that were looking for my specific technical skills.",
+      "avatar": "/MEVN/frontend/public/images/testimonials/1.png",
+      "featured": true
+    }
+  ],
+  "languages": [
+    {
+      "id": 1,
+      "code": "en",
+      "name": "English",
+      "active": true
+    },
+    {
+      "id": 2,
+      "code": "es",
+      "name": "Español",
+      "active": true
+    }
+  ],
+  "translations": {
+    "en": {
+      "home": "Home",
+      "jobs": "Jobs",
+      "companies": "Companies",
+      "about": "About",
+      "contact": "Contact",
+      "login": "Login",
+      "register": "Register",
+      "search": "Search",
+      "featuredJobs": "Featured Jobs",
+      "topCompanies": "Top Companies",
+      "testimonials": "Testimonials",
+      "viewMore": "View More",
+      "applyNow": "Apply Now",
+      "jobDetails": "Job Details",
+      "companyDetails": "Company Details",
+      "location": "Location",
+      "jobType": "Job Type",
+      "salary": "Salary",
+      "requirements": "Requirements",
+      "description": "Description",
+      "postedOn": "Posted On",
+      "applyForThisJob": "Apply for this Job",
+      "similarJobs": "Similar Jobs",
+      "companyProfile": "Company Profile",
+      "industry": "Industry",
+      "website": "Website",
+      "companyJobs": "Jobs at this Company"
+    },
+    "es": {
+      "home": "Inicio",
+      "jobs": "Empleos",
+      "companies": "Empresas",
+      "about": "Acerca de",
+      "contact": "Contacto",
+      "login": "Iniciar Sesión",
+      "register": "Registrarse",
+      "search": "Buscar",
+      "featuredJobs": "Empleos Destacados",
+      "topCompanies": "Mejores Empresas",
+      "testimonials": "Testimonios",
+      "viewMore": "Ver Más",
+      "applyNow": "Aplicar Ahora",
+      "jobDetails": "Detalles del Empleo",
+      "companyDetails": "Detalles de la Empresa",
+      "location": "Ubicación",
+      "jobType": "Tipo de Empleo",
+      "salary": "Salario",
+      "requirements": "Requisitos",
+      "description": "Descripción",
+      "postedOn": "Publicado el",
+      "applyForThisJob": "Aplicar a este Empleo",
+      "similarJobs": "Empleos Similares",
+      "companyProfile": "Perfil de la Empresa",
+      "industry": "Industria",
+      "website": "Sitio Web",
+      "companyJobs": "Empleos en esta Empresa"
+    }
+  },
+  "jobCategories": [],
+  "jobTypes": [],
+  "jobSkills": [],
+  "jobShifts": [],
+  "jobExperiences": [],
+  "careerLevels": [],
+  "functionalAreas": [],
+  "degreeTypes": [],
+  "degreeLevels": [],
+  "languageLevels": [],
+  "packages": [],
+  "transactions": [],
+  "invoices": []
+}

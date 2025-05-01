@@ -1,0 +1,401 @@
+{
+  "jobs": [],
+  "companies": [],
+  "users": [
+    {
+      "id": "1",
+      "email": "admin@example.com",
+      "password": "$2a$10$XOPbrlUPQdwdJUpSrIF6X.LbE14qsMmKGhM1A8W9iqaG3vv1BD7WC",
+      "role": "admin",
+      "firstName": "Admin",
+      "lastName": "User",
+      "isVerified": true,
+      "isActive": true,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "email": "employer@example.com",
+      "password": "$2a$10$XOPbrlUPQdwdJUpSrIF6X.LbE14qsMmKGhM1A8W9iqaG3vv1BD7WC",
+      "role": "employer",
+      "firstName": "Employer",
+      "lastName": "User",
+      "isVerified": true,
+      "isActive": true,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "email": "candidate@example.com",
+      "password": "$2a$10$XOPbrlUPQdwdJUpSrIF6X.LbE14qsMmKGhM1A8W9iqaG3vv1BD7WC",
+      "role": "candidate",
+      "firstName": "Candidate",
+      "lastName": "User",
+      "isVerified": true,
+      "isActive": true,
+      "skills": ["JavaScript", "Vue.js", "Node.js"],
+      "jobTitle": "Full Stack Developer",
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "1",
+      "name": "Technology",
+      "description": "Technology and IT jobs",
+      "icon": "mdi-laptop",
+      "slug": "technology",
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "Marketing",
+      "description": "Marketing and advertising jobs",
+      "icon": "mdi-bullhorn",
+      "slug": "marketing",
+      "isActive": true,
+      "order": 2,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "Finance",
+      "description": "Finance and accounting jobs",
+      "icon": "mdi-cash",
+      "slug": "finance",
+      "isActive": true,
+      "order": 3,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "name": "Healthcare",
+      "description": "Healthcare and medical jobs",
+      "icon": "mdi-medical-bag",
+      "slug": "healthcare",
+      "isActive": true,
+      "order": 4,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "name": "Education",
+      "description": "Education and teaching jobs",
+      "icon": "mdi-school",
+      "slug": "education",
+      "isActive": true,
+      "order": 5,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "jobTypes": [
+    {
+      "id": "1",
+      "name": "Full-time",
+      "slug": "full-time",
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "Part-time",
+      "slug": "part-time",
+      "isActive": true,
+      "order": 2,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "Contract",
+      "slug": "contract",
+      "isActive": true,
+      "order": 3,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "name": "Freelance",
+      "slug": "freelance",
+      "isActive": true,
+      "order": 4,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "name": "Internship",
+      "slug": "internship",
+      "isActive": true,
+      "order": 5,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "skills": [
+    {
+      "id": "1",
+      "name": "JavaScript",
+      "slug": "javascript",
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "React",
+      "slug": "react",
+      "isActive": true,
+      "order": 2,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "Vue.js",
+      "slug": "vue-js",
+      "isActive": true,
+      "order": 3,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "name": "Node.js",
+      "slug": "node-js",
+      "isActive": true,
+      "order": 4,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "name": "Python",
+      "slug": "python",
+      "isActive": true,
+      "order": 5,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "careerLevels": [
+    {
+      "id": "1",
+      "name": "Entry Level",
+      "slug": "entry-level",
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "Mid Level",
+      "slug": "mid-level",
+      "isActive": true,
+      "order": 2,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "Senior Level",
+      "slug": "senior-level",
+      "isActive": true,
+      "order": 3,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "name": "Manager",
+      "slug": "manager",
+      "isActive": true,
+      "order": 4,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "name": "Director",
+      "slug": "director",
+      "isActive": true,
+      "order": 5,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "experiences": [
+    {
+      "id": "1",
+      "name": "No Experience",
+      "slug": "no-experience",
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "1-2 Years",
+      "slug": "1-2-years",
+      "isActive": true,
+      "order": 2,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "3-5 Years",
+      "slug": "3-5-years",
+      "isActive": true,
+      "order": 3,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "name": "5-10 Years",
+      "slug": "5-10-years",
+      "isActive": true,
+      "order": 4,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "name": "10+ Years",
+      "slug": "10-plus-years",
+      "isActive": true,
+      "order": 5,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "tags": [
+    {
+      "id": "1",
+      "name": "Remote",
+      "slug": "remote",
+      "isActive": true,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "Flexible Hours",
+      "slug": "flexible-hours",
+      "isActive": true,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "High Salary",
+      "slug": "high-salary",
+      "isActive": true,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "name": "Startup",
+      "slug": "startup",
+      "isActive": true,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "name": "Enterprise",
+      "slug": "enterprise",
+      "isActive": true,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "locations": [
+    {
+      "id": "1",
+      "name": "United States",
+      "type": "country",
+      "code": "US",
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "name": "California",
+      "type": "state",
+      "countryId": "1",
+      "code": "CA",
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "San Francisco",
+      "type": "city",
+      "countryId": "1",
+      "stateId": "2",
+      "latitude": 37.7749,
+      "longitude": -122.4194,
+      "isActive": true,
+      "order": 1,
+      "jobCount": 0,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "applications": []
+}

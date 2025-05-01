@@ -1,0 +1,443 @@
+<template>
+  <div class="company-detail-view">
+    <v-container v-if="loading">
+      <v-row>
+        <v-col cols="12" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+          ></v-progress-circular>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <v-container v-else-if="!company">
+      <v-row>
+        <v-col cols="12" class="text-center">
+          <v-alert type="error"> Company not found or failed to load. </v-alert>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <template v-else>
+      <!-- Company Header -->
+      <div class="company-header">
+        <v-img
+          :src="company.coverImage || 'https://via.placeholder.com/1200x300'"
+          height="300"
+          class="white--text align-end"
+          gradient="to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%"
+        >
+          <v-container>
+            <v-row align="end">
+              <v-col cols="12" md="8">
+                <div class="d-flex align-center">
+                  <v-avatar size="80" class="mr-4">
+                    <v-img
+                      :src="company.logo || 'https://via.placeholder.com/80'"
+                    ></v-img>
+                  </v-avatar>
+                  <div>
+                    <h1 class="text-h3 white--text">{{ company.name }}</h1>
+                    <div class="subtitle-1 white--text">
+                      {{ company.industry }} · {{ company.location }}
+                    </div>
+                  </div>
+                </div>
+              </v-col>
+
+              <v-col cols="12" md="4" class="text-right">
+                <v-btn
+                  color="primary"
+                  large
+                  :to="{ name: 'jobs', query: { company: company.id } }"
+                >
+                  View Jobs
+                </v-btn>
+
+                <v-btn
+                  v-if="isOwner"
+                  color="secondary"
+                  large
+                  class="ml-2"
+                  :to="{ name: 'company-profile', params: { id: company.id } }"
+                >
+                  Edit Profile
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-img>
+      </div>
+
+      <v-container>
+        <!-- Company Tabs -->
+        <v-tabs v-model="activeTab" background-color="transparent" grow>
+          <v-tab>Overview</v-tab>
+          <v-tab>Jobs</v-tab>
+          <v-tab v-if="isOwner">Analytics</v-tab>
+        </v-tabs>
+
+        <v-tabs-items v-model="activeTab">
+          <!-- Overview Tab -->
+          <v-tab-item>
+            <v-row class="mt-6">
+              <v-col cols="12" md="8">
+                <v-card class="mb-6">
+                  <v-card-title>About {{ company.name }}</v-card-title>
+                  <v-card-text>
+                    <div v-if="company.description">
+                      <p>{{ company.description }}</p>
+                    </div>
+                    <div v-else>
+                      <p>No company description available.</p>
+                    </div>
+                  </v-card-text>
+                </v-card>
+
+                <v-card
+                  class="mb-6"
+                  v-if="
+                    company.culture ||
+                    company.benefits ||
+                    company.workEnvironment
+                  "
+                >
+                  <v-card-title>Company Culture</v-card-title>
+                  <v-card-text>
+                    <div v-if="company.culture">
+                      <h3 class="subtitle-1 font-weight-bold mb-2">
+                        Our Culture
+                      </h3>
+                      <p>{{ company.culture }}</p>
+                    </div>
+
+                    <div
+                      v-if="company.benefits && company.benefits.length > 0"
+                      class="mt-4"
+                    >
+                      <h3 class="subtitle-1 font-weight-bold mb-2">Benefits</h3>
+                      <v-chip-group>
+                        <v-chip
+                          v-for="(benefit, index) in company.benefits"
+                          :key="index"
+                        >
+                          {{ benefit }}
+                        </v-chip>
+                      </v-chip-group>
+                    </div>
+
+                    <div v-if="company.workEnvironment" class="mt-4">
+                      <h3 class="subtitle-1 font-weight-bold mb-2">
+                        Work Environment
+                      </h3>
+                      <p>{{ company.workEnvironment }}</p>
+                    </div>
+                  </v-card-text>
+                </v-card>
+
+                <v-card
+                  v-if="company.technologies && company.technologies.length > 0"
+                >
+                  <v-card-title>Technologies</v-card-title>
+                  <v-card-text>
+                    <v-chip-group>
+                      <v-chip
+                        v-for="(tech, index) in company.technologies"
+                        :key="index"
+                      >
+                        {{ tech }}
+                      </v-chip>
+                    </v-chip-group>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <v-col cols="12" md="4">
+                <v-card class="mb-6">
+                  <v-card-title>Company Info</v-card-title>
+                  <v-card-text>
+                    <v-list dense>
+                      <v-list-item v-if="company.website">
+                        <v-list-item-icon>
+                          <v-icon>mdi-web</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            <a
+                              :href="company.website"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {{ company.website }}
+                            </a>
+                          </v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item v-if="company.email">
+                        <v-list-item-icon>
+                          <v-icon>mdi-email</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            <a :href="`mailto:${company.email}`">
+                              {{ company.email }}
+                            </a>
+                          </v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item v-if="company.phone">
+                        <v-list-item-icon>
+                          <v-icon>mdi-phone</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            <a :href="`tel:${company.phone}`">
+                              {{ company.phone }}
+                            </a>
+                          </v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item v-if="company.location">
+                        <v-list-item-icon>
+                          <v-icon>mdi-map-marker</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title>{{
+                            company.location
+                          }}</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item v-if="company.size">
+                        <v-list-item-icon>
+                          <v-icon>mdi-account-group</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title>{{
+                            company.size
+                          }}</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item v-if="company.founded">
+                        <v-list-item-icon>
+                          <v-icon>mdi-calendar</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title
+                            >Founded: {{ company.founded }}</v-list-item-title
+                          >
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                  </v-card-text>
+                </v-card>
+
+                <v-card class="mb-6" v-if="company.socialLinks">
+                  <v-card-title>Connect</v-card-title>
+                  <v-card-text>
+                    <div class="d-flex justify-space-around">
+                      <v-btn
+                        icon
+                        v-if="company.socialLinks.facebook"
+                        :href="company.socialLinks.facebook"
+                        target="_blank"
+                      >
+                        <v-icon>mdi-facebook</v-icon>
+                      </v-btn>
+
+                      <v-btn
+                        icon
+                        v-if="company.socialLinks.twitter"
+                        :href="company.socialLinks.twitter"
+                        target="_blank"
+                      >
+                        <v-icon>mdi-twitter</v-icon>
+                      </v-btn>
+
+                      <v-btn
+                        icon
+                        v-if="company.socialLinks.linkedin"
+                        :href="company.socialLinks.linkedin"
+                        target="_blank"
+                      >
+                        <v-icon>mdi-linkedin</v-icon>
+                      </v-btn>
+
+                      <v-btn
+                        icon
+                        v-if="company.socialLinks.instagram"
+                        :href="company.socialLinks.instagram"
+                        target="_blank"
+                      >
+                        <v-icon>mdi-instagram</v-icon>
+                      </v-btn>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-tab-item>
+
+          <!-- Jobs Tab -->
+          <v-tab-item>
+            <v-row class="mt-6">
+              <v-col cols="12">
+                <v-card v-if="company.jobs && company.jobs.length > 0">
+                  <v-card-title>
+                    Available Jobs
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      v-if="isOwner"
+                      color="primary"
+                      :to="{ name: 'post-job' }"
+                    >
+                      Post New Job
+                    </v-btn>
+                  </v-card-title>
+
+                  <v-list two-line>
+                    <v-list-item
+                      v-for="job in company.jobs"
+                      :key="job.id"
+                      :to="{ name: 'job-detail', params: { id: job.id } }"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title>{{ job.title }}</v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ job.location }} · {{ job.type }}
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+
+                      <v-list-item-action>
+                        <v-btn
+                          outlined
+                          color="primary"
+                          :to="{ name: 'job-detail', params: { id: job.id } }"
+                        >
+                          View
+                        </v-btn>
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+
+                <v-card v-else>
+                  <v-card-title>
+                    No Jobs Available
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      v-if="isOwner"
+                      color="primary"
+                      :to="{ name: 'post-job' }"
+                    >
+                      Post New Job
+                    </v-btn>
+                  </v-card-title>
+
+                  <v-card-text>
+                    <p>
+                      This company doesn't have any active job listings at the
+                      moment.
+                    </p>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-tab-item>
+
+          <!-- Analytics Tab (Owner Only) -->
+          <v-tab-item v-if="isOwner">
+            <v-row class="mt-6">
+              <v-col cols="12" class="text-center">
+                <v-btn
+                  color="primary"
+                  large
+                  :to="{
+                    name: 'company-analytics',
+                    params: { id: company.id },
+                  }"
+                >
+                  View Detailed Analytics
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-tab-item>
+        </v-tabs-items>
+
+        <!-- Sección de reseñas -->
+        <v-divider class="my-5"></v-divider>
+
+        <review-component
+          entity-type="company"
+          :entity-id="company.id"
+          title="Reseñas sobre esta empresa"
+        ></review-component>
+      </v-container>
+    </template>
+  </div>
+</template>
+
+<script>
+import { mapGetters } from "vuex";
+import ReviewComponent from "@/components/reviews/ReviewComponent.vue";
+
+export default {
+  name: "CompanyDetailView",
+  components: {
+    ReviewComponent,
+    // Otros componentes...
+  },
+  data() {
+    return {
+      company: null,
+      loading: true,
+      activeTab: 0,
+    };
+  },
+
+  computed: {
+    ...mapGetters(["currentUser"]),
+
+    isOwner() {
+      return (
+        this.currentUser &&
+        this.company &&
+        this.company.userId === this.currentUser.id
+      );
+    },
+  },
+
+  created() {
+    this.fetchCompanyDetails();
+  },
+
+  methods: {
+    async fetchCompanyDetails() {
+      this.loading = true;
+
+      try {
+        const response = await this.$axios.get(
+          `/companies/${this.$route.params.id}`
+        );
+        this.company = response.data;
+      } catch (error) {
+        console.error("Error fetching company details:", error);
+        this.$store.commit("SET_ERROR", "Failed to fetch company details");
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.company-header {
+  margin-bottom: 20px;
+}
+</style>

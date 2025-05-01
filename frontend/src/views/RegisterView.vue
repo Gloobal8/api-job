@@ -1,0 +1,169 @@
+<template>
+  <v-container class="fill-height" fluid>
+    <v-row align="center" justify="center">
+      <v-col cols="12" sm="10" md="8" lg="6">
+        <v-card class="elevation-12">
+          <v-toolbar color="primary" dark flat>
+            <v-toolbar-title>Register</v-toolbar-title>
+            <v-spacer></v-spacer>
+          </v-toolbar>
+          
+          <v-card-text>
+            <v-alert
+              v-if="error"
+              type="error"
+              dismissible
+              @input="error = null"
+            >
+              {{ error }}
+            </v-alert>
+            
+            <v-form ref="form" v-model="valid" @submit.prevent="register">
+              <v-text-field
+                v-model="name"
+                :rules="nameRules"
+                label="Full Name"
+                prepend-icon="mdi-account"
+                required
+              ></v-text-field>
+              
+              <v-text-field
+                v-model="email"
+                :rules="emailRules"
+                label="Email"
+                prepend-icon="mdi-email"
+                type="email"
+                required
+              ></v-text-field>
+              
+              <v-text-field
+                v-model="password"
+                :rules="passwordRules"
+                label="Password"
+                prepend-icon="mdi-lock"
+                :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                @click:append="showPassword = !showPassword"
+                :type="showPassword ? 'text' : 'password'"
+                required
+              ></v-text-field>
+              
+              <v-text-field
+                v-model="confirmPassword"
+                :rules="confirmPasswordRules"
+                label="Confirm Password"
+                prepend-icon="mdi-lock-check"
+                :type="showPassword ? 'text' : 'password'"
+                required
+              ></v-text-field>
+              
+              <v-radio-group
+                v-model="role"
+                :rules="roleRules"
+                row
+                required
+              >
+                <v-radio
+                  label="Job Seeker"
+                  value="jobseeker"
+                ></v-radio>
+                <v-radio
+                  label="Employer"
+                  value="employer"
+                ></v-radio>
+              </v-radio-group>
+            </v-form>
+          </v-card-text>
+          
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="primary"
+              :loading="loading"
+              :disabled="!valid || loading"
+              @click="register"
+            >
+              Register
+            </v-btn>
+          </v-card-actions>
+          
+          <v-card-text class="text-center">
+            Already have an account?
+            <v-btn text color="primary" to="/login">
+              Login
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
+
+<script>
+export default {
+  name: 'RegisterView',
+  data() {
+    return {
+      valid: false,
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'jobseeker',
+      showPassword: false,
+      loading: false,
+      error: null,
+      nameRules: [
+        v => !!v || 'Name is required',
+        v => v.length >= 3 || 'Name must be at least 3 characters'
+      ],
+      emailRules: [
+        v => !!v || 'Email is required',
+        v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Email must be valid'
+      ],
+      passwordRules: [
+        v => !!v || 'Password is required',
+        v => v.length >= 6 || 'Password must be at least 6 characters'
+      ],
+      roleRules: [
+        v => !!v || 'Please select a role'
+      ]
+    }
+  },
+  computed: {
+    confirmPasswordRules() {
+      return [
+        v => !!v || 'Please confirm your password',
+        v => v === this.password || 'Passwords do not match'
+      ]
+    }
+  },
+  methods: {
+    register() {
+      if (this.$refs.form.validate()) {
+        this.loading = true;
+        this.error = null;
+        
+        this.$store.dispatch('register', {
+          name: this.name,
+          email: this.email,
+          password: this.password,
+          role: this.role
+        })
+          .then(() => {
+            // Show success message and redirect to login
+            this.$router.push({
+              path: '/login',
+              query: { registered: 'success' }
+            });
+          })
+          .catch(error => {
+            this.error = error.response?.data?.message || 'Registration failed. Please try again.';
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+      }
+    }
+  }
+}
+</script>
