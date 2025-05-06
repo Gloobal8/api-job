@@ -1,212 +1,180 @@
-// Category Controller
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const Category = require("../models/Category");
+const Post = require("../models/Post");
 
-// Helper to read/write to JSON file
-const DB_PATH = path.join(__dirname, '../data/db.json');
-
-const readDB = () => {
+// Get all categories
+exports.getAllCategories = async (req, res) => {
   try {
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading database:', error);
-    return { jobs: [], companies: [], users: [], categories: [], applications: [] };
-  }
-};
+    const categories = Category.findAll();
 
-const writeDB = (data) => {
-  try {
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error writing to database:', error);
-    return false;
-  }
-};
-
-// Category Controller methods
-const getAllCategories = (req, res) => {
-  try {
-    const db = readDB();
-    
-    // Support for filtering
-    let categories = [...db.categories];
-    
-    // Filter by query parameters
-    const { active, search } = req.query;
-    
-    if (active === 'true') {
-      categories = categories.filter(category => category.isActive);
-    }
-    
-    if (search) {
-      categories = categories.filter(category => 
-        category.name.toLowerCase().includes(search.toLowerCase()) || 
-        (category.description && category.description.toLowerCase().includes(search.toLowerCase()))
-      );
-    }
-    
-    // Pagination
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50; // Higher limit for categories
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    
-    const results = {
-      totalCategories: categories.length,
-      totalPages: Math.ceil(categories.length / limit),
-      currentPage: page,
-      categories: categories.slice(startIndex, endIndex)
-    };
-    
-    res.status(200).json(results);
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    res.status(500).json({ message: 'Server error while fetching categories' });
-  }
-};
-
-const getCategoryById = (req, res) => {
-  try {
-    const db = readDB();
-    const category = db.categories.find(category => category.id === req.params.id);
-    
-    if (!category) {
-      return res.status(404).json({ message: 'Category not found' });
-    }
-    
-    // Get jobs in this category
-    const categoryJobs = db.jobs.filter(job => job.category === category.id);
-    
-    // Return category with its jobs
     res.status(200).json({
-      ...category,
-      jobs: categoryJobs
+      success: true,
+      categories,
     });
   } catch (error) {
-    console.error('Error fetching category:', error);
-    res.status(500).json({ message: 'Server error while fetching category' });
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving categories",
+      error: error.message,
+    });
   }
 };
 
-const createCategory = (req, res) => {
+// Get a single category by ID
+exports.getCategoryById = async (req, res) => {
   try {
-    const db = readDB();
-    
-    // Check if user is authenticated and is an admin
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Only admins can create categories' });
+    const category = Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
     }
-    
-    // Validate required fields
-    const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: 'Category name is required' });
-    }
-    
-    // Create new category
-    const newCategory = {
-      id: uuidv4(),
-      name,
-      description: req.body.description || '',
-      icon: req.body.icon || '',
-      slug: req.body.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      parentId: req.body.parentId || null,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : true,
-      order: req.body.order || 0,
-      jobCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    db.categories.push(newCategory);
-    writeDB(db);
-    
-    res.status(201).json(newCategory);
+
+    res.status(200).json({
+      success: true,
+      category,
+    });
   } catch (error) {
-    console.error('Error creating category:', error);
-    res.status(500).json({ message: 'Server error while creating category' });
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving category",
+      error: error.message,
+    });
   }
 };
 
-const updateCategory = (req, res) => {
+// Get a single category by slug
+exports.getCategoryBySlug = async (req, res) => {
   try {
-    const db = readDB();
-    const categoryIndex = db.categories.findIndex(category => category.id === req.params.id);
-    
-    if (categoryIndex === -1) {
-      return res.status(404).json({ message: 'Category not found' });
+    const category = Category.findBySlug(req.params.slug);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
     }
-    
-    // Check if user is authenticated and is an admin
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Only admins can update categories' });
+
+    res.status(200).json({
+      success: true,
+      category,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving category",
+      error: error.message,
+    });
+  }
+};
+
+// Create a new category
+exports.createCategory = async (req, res) => {
+  try {
+    // Check if user is authenticated and is admin
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to create categories",
+      });
     }
-    
-    const category = db.categories[categoryIndex];
-    
+
+    // Create category
+    const newCategory = Category.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "Category created successfully",
+      category: newCategory,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Error creating category",
+      error: error.message,
+    });
+  }
+};
+
+// Update a category
+exports.updateCategory = async (req, res) => {
+  try {
+    // Check if user is authenticated and is admin
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update categories",
+      });
+    }
+
+    const category = Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
     // Update category
-    const updatedCategory = {
-      ...category,
-      name: req.body.name || category.name,
-      description: req.body.description !== undefined ? req.body.description : category.description,
-      icon: req.body.icon !== undefined ? req.body.icon : category.icon,
-      slug: req.body.slug || category.slug,
-      parentId: req.body.parentId !== undefined ? req.body.parentId : category.parentId,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : category.isActive,
-      order: req.body.order !== undefined ? req.body.order : category.order,
-      updatedAt: new Date().toISOString()
-    };
-    
-    db.categories[categoryIndex] = updatedCategory;
-    writeDB(db);
-    
-    res.status(200).json(updatedCategory);
+    const updatedCategory = Category.update(req.params.id, req.body);
+
+    res.status(200).json({
+      success: true,
+      message: "Category updated successfully",
+      category: updatedCategory,
+    });
   } catch (error) {
-    console.error('Error updating category:', error);
-    res.status(500).json({ message: 'Server error while updating category' });
+    res.status(400).json({
+      success: false,
+      message: "Error updating category",
+      error: error.message,
+    });
   }
 };
 
-const deleteCategory = (req, res) => {
+// Delete a category
+exports.deleteCategory = async (req, res) => {
   try {
-    const db = readDB();
-    const categoryIndex = db.categories.findIndex(category => category.id === req.params.id);
-    
-    if (categoryIndex === -1) {
-      return res.status(404).json({ message: 'Category not found' });
+    // Check if user is authenticated and is admin
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete categories",
+      });
     }
-    
-    // Check if user is authenticated and is an admin
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Only admins can delete categories' });
-    }
-    
-    // Check if category is in use
-    const isInUse = db.jobs.some(job => job.category === req.params.id);
-    
-    if (isInUse) {
-      return res.status(400).json({ message: 'Cannot delete category that is in use by jobs' });
-    }
-    
-    // Remove category
-    db.categories.splice(categoryIndex, 1);
-    writeDB(db);
-    
-    res.status(200).json({ message: 'Category deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting category:', error);
-    res.status(500).json({ message: 'Server error while deleting category' });
-  }
-};
 
-// Export controller methods
-module.exports = {
-  getAllCategories,
-  getCategoryById,
-  createCategory,
-  updateCategory,
-  deleteCategory
+    const category = Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    // Check if category is in use
+    const posts = Post.findAll({ categoryId: req.params.id });
+    if (posts.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete category that is in use by posts",
+      });
+    }
+
+    // Delete category
+    Category.delete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error deleting category",
+      error: error.message,
+    });
+  }
 };

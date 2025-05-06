@@ -30,9 +30,10 @@ const userDataPath = path.join(dataPath, "users.json");
 
 // Import routes
 const authRoutes = require("./routes/auth");
+const addressRoutes = require("./routes/address");
 const userRoutes = require("./routes/users");
 const jobRoutes = require("./routes/jobs");
-const companyRoutes = require("./routes/companies");
+const companiesRoutes = require("./routes/companies");
 const applicationRoutes = require("./routes/applications");
 const categoryRoutes = require("./routes/categories");
 const transactionRoutes = require("./routes/transactions");
@@ -88,12 +89,15 @@ app.use(
     lastModified: true,
   })
 );
+// Serve static files
+app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/auth", addressRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
-app.use("/api/companies", companyRoutes);
+app.use("/api/companies", companiesRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/credits", transactionRoutes);
@@ -132,15 +136,25 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to Job Board API" });
 });
 
+/*router.get("/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});*/
+
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: "Endpoint not found",
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
-    message: "Something went wrong!",
-    error:
-      process.env.NODE_ENV === "development"
-        ? err.message
-        : "Internal server error",
+    success: false,
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
@@ -149,3 +163,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+module.exports = app;

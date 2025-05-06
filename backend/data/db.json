@@ -1,401 +1,279 @@
 {
-  "jobs": [],
-  "companies": [],
-  "users": [
+  "posts": [
     {
-      "id": "1",
-      "email": "admin@example.com",
-      "password": "$2a$10$XOPbrlUPQdwdJUpSrIF6X.LbE14qsMmKGhM1A8W9iqaG3vv1BD7WC",
-      "role": "admin",
-      "firstName": "Admin",
-      "lastName": "User",
-      "isVerified": true,
-      "isActive": true,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "id": "sample-post-1",
+      "title": "Sample Blog Post",
+      "slug": "sample-post-1",
+      "content": "<p>This is a sample blog post content.</p>\n                <p>You can add more paragraphs here to demonstrate the layout and styling of the blog detail page.</p>\n                <h2>Key Features of This Blog System</h2>\n                <ul>\n                  <li>Responsive design that works on all devices</li>\n                  <li>Support for comments and discussions</li>\n                  <li>Category and tag organization</li>\n                  <li>Author profiles and information</li>\n                  <li>Related posts suggestions</li>\n                </ul>\n                <p>This is just a sample post to demonstrate the functionality of the blog system. In a real application, this would be replaced with actual content.</p>\n                <h3>Code Example</h3>\n                <pre><code>// Example Vue.js component\nexport default {\n  data() {\n    return {\n      message: 'Hello World!'\n    }\n  },\n  methods: {\n    greet() {\n      console.log(this.message)\n    }\n  }\n}</code></pre>",
+      "categoryId": "1",
+      "tags": [
+        "sample",
+        "example",
+        "demo"
+      ],
+      "status": "published",
+      "featuredImage": "blog/posts/featured-image/sample-post-1.jpg",
+      "metaDescription": "This is a sample blog post to demonstrate the blog detail view.",
+      "authorId": "1",
+      "authorName": "John Doe",
+      "createdAt": "2025-05-02T19:02:02.064Z",
+      "updatedAt": "2025-05-02T19:02:02.064Z",
+      "publishedAt": "2025-05-02T19:02:02.064Z",
+      "viewCount": 42
     },
     {
-      "id": "2",
-      "email": "employer@example.com",
-      "password": "$2a$10$XOPbrlUPQdwdJUpSrIF6X.LbE14qsMmKGhM1A8W9iqaG3vv1BD7WC",
-      "role": "employer",
-      "firstName": "Employer",
-      "lastName": "User",
-      "isVerified": true,
-      "isActive": true,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "id": "4461eff3-ed65-4ca3-9aef-78db1f9a024a",
+      "title": "Getting Started with MEVN Stack",
+      "slug": "getting-started-with-mevn-stack",
+      "content": "<p>The MEVN stack is a free and open-source JavaScript software stack for building dynamic web sites and web applications. The MEVN stack is MongoDB, Express.js, Vue.js, and Node.js.</p>\n                <h2>What is MEVN Stack?</h2>\n                <p>MEVN Stack is a collection of JavaScript technologies used to develop web applications. From client to server to database, everything is based on JavaScript. MEVN is one of several variations of the MEAN stack (MongoDB, Express.js, AngularJS, Node.js), where the traditional AngularJS frontend framework is replaced with Vue.js.</p>\n                <h2>Components of MEVN Stack</h2>\n                <h3>MongoDB</h3>\n                <p>MongoDB is a NoSQL database which stores data in JSON-like documents with dynamic schemas. It's designed to be scalable and developer-friendly.</p>\n                <h3>Express.js</h3>\n                <p>Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.</p>\n                <h3>Vue.js</h3>\n                <p>Vue.js is a progressive JavaScript framework used for building user interfaces. Unlike other monolithic frameworks, Vue is designed from the ground up to be incrementally adoptable.</p>\n                <h3>Node.js</h3>\n                <p>Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine. It allows you to run JavaScript on the server side.</p>\n                <h2>Why Choose MEVN Stack?</h2>\n                <p>There are several benefits to using the MEVN stack:</p>\n                <ul>\n                  <li>JavaScript Everywhere: Use JavaScript for both client and server side</li>\n                  <li>Single Page Applications: Create fluid and responsive SPAs</li>\n                  <li>Open Source: All components are open-source with strong community support</li>\n                  <li>Flexibility: Each component can be replaced if needed</li>\n                  <li>Real-time Applications: Perfect for real-time applications like chat apps</li>\n                </ul>",
+      "categoryId": "1",
+      "tags": [
+        "MEVN",
+        "JavaScript",
+        "Web Development",
+        "Tutorial"
+      ],
+      "status": "published",
+      "featuredImage": "blog/posts/featured-image/mevn-stack.jpg",
+      "metaDescription": "Learn about the MEVN stack and how to get started with MongoDB, Express.js, Vue.js, and Node.js.",
+      "authorId": "1",
+      "authorName": "John Doe",
+      "createdAt": "2025-04-27T19:02:02.064Z",
+      "updatedAt": "2025-04-27T19:02:02.064Z",
+      "publishedAt": "2025-04-27T19:02:02.064Z",
+      "viewCount": 254
     },
     {
-      "id": "3",
-      "email": "candidate@example.com",
-      "password": "$2a$10$XOPbrlUPQdwdJUpSrIF6X.LbE14qsMmKGhM1A8W9iqaG3vv1BD7WC",
-      "role": "candidate",
-      "firstName": "Candidate",
-      "lastName": "User",
-      "isVerified": true,
-      "isActive": true,
-      "skills": ["JavaScript", "Vue.js", "Node.js"],
-      "jobTitle": "Full Stack Developer",
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "id": "4045f997-dc83-4945-89be-123d1de5c791",
+      "title": "Building RESTful APIs with Express.js",
+      "slug": "building-restful-apis-with-expressjs",
+      "content": "<p>Express.js is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications. In this tutorial, we'll learn how to build RESTful APIs using Express.js.</p>\n                <h2>What is a RESTful API?</h2>\n                <p>REST (Representational State Transfer) is an architectural style for designing networked applications. RESTful APIs use HTTP requests to perform CRUD (Create, Read, Update, Delete) operations.</p>\n                <h2>Setting Up Express.js</h2>\n                <p>First, let's set up a basic Express.js server:</p>\n                <pre><code>const express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.use(express.json());\n\napp.listen(port, () => {\n  console.log(`Server running on port ${port}`);\n});</code></pre>\n                <h2>Creating API Routes</h2>\n                <p>Now, let's create some basic CRUD routes:</p>\n                <pre><code>// Get all items\napp.get('/api/items', (req, res) => {\n  // Logic to fetch all items\n  res.json({ items: [] });\n});\n\n// Get a single item\napp.get('/api/items/:id', (req, res) => {\n  const id = req.params.id;\n  // Logic to fetch item by id\n  res.json({ item: {} });\n});\n\n// Create a new item\napp.post('/api/items', (req, res) => {\n  const newItem = req.body;\n  // Logic to create item\n  res.status(201).json({ item: newItem });\n});\n\n// Update an item\napp.put('/api/items/:id', (req, res) => {\n  const id = req.params.id;\n  const updatedItem = req.body;\n  // Logic to update item\n  res.json({ item: updatedItem });\n});\n\n// Delete an item\napp.delete('/api/items/:id', (req, res) => {\n  const id = req.params.id;\n  // Logic to delete item\n  res.json({ message: 'Item deleted' });\n});</code></pre>",
+      "categoryId": "2",
+      "tags": [
+        "Express.js",
+        "Node.js",
+        "API",
+        "REST",
+        "Backend"
+      ],
+      "status": "published",
+      "featuredImage": "https://via.placeholder.com/800x400?text=Express.js+APIs",
+      "metaDescription": "Learn how to build RESTful APIs with Express.js and Node.js. Complete guide with code examples.",
+      "authorId": "2",
+      "authorName": "Jane Smith",
+      "createdAt": "2025-04-29T19:02:02.064Z",
+      "updatedAt": "2025-04-29T19:02:02.064Z",
+      "publishedAt": "2025-04-29T19:02:02.064Z",
+      "viewCount": 187
+    },
+    {
+      "id": "4e126677-e5aa-45ec-97b4-64419905eed1",
+      "title": "Vue.js Components and Props",
+      "slug": "vuejs-components-and-props",
+      "content": "<p>Components are one of the most powerful features of Vue.js. They help you extend basic HTML elements to encapsulate reusable code. In this post, we'll explore components and props in Vue.js.</p>\n                <h2>What are Vue Components?</h2>\n                <p>Components are reusable Vue instances with a name. They can be used as custom elements in the template of other Vue instances (components).</p>\n                <h2>Creating a Component</h2>\n                <p>Here's how to create a simple component:</p>\n                <pre><code>Vue.component('button-counter', {\n  data() {\n    return {\n      count: 0\n    }\n  },\n  template: `\n    <button @click=\"count++\">\n      You clicked me {{ count }} times.\n    </button>\n  `\n})</code></pre>\n                <p>In Vue 3 with the Composition API, you can create a component like this:</p>\n                <pre><code><script setup>\nimport { ref } from 'vue'\n\nconst count = ref(0)\n</script>\n\n<template>\n  <button @click=\"count++\">\n    You clicked me {{ count }} times.\n  </button>\n</template></code></pre>\n                <h2>Using Props</h2>\n                <p>Props are custom attributes you can register on a component. When a value is passed to a prop attribute, it becomes a property on that component instance.</p>\n                <pre><code><script setup>\nconst props = defineProps({\n  title: String,\n  likes: Number,\n  isPublished: Boolean,\n  commentIds: Array,\n  author: Object\n})\n</script>\n\n<template>\n  <h1>{{ title }}</h1>\n  <p>{{ likes }} Likes</p>\n</template></code></pre>\n                <h2>Using the Component</h2>\n                <p>Now you can use the component in your template:</p>\n                <pre><code><blog-post \n  title=\"My journey with Vue\"\n  :likes=\"42\"\n  :is-published=\"true\"\n></blog-post></code></pre>",
+      "categoryId": "3",
+      "tags": [
+        "Vue.js",
+        "JavaScript",
+        "Frontend",
+        "Components"
+      ],
+      "status": "published",
+      "featuredImage": "https://via.placeholder.com/800x400?text=Vue.js+Components",
+      "metaDescription": "Learn about Vue.js components and props. Understand how to create reusable components and pass data with props.",
+      "authorId": "1",
+      "authorName": "John Doe",
+      "createdAt": "2025-05-01T19:02:02.064Z",
+      "updatedAt": "2025-05-01T19:02:02.064Z",
+      "publishedAt": "2025-05-01T19:02:02.064Z",
+      "viewCount": 321
     }
   ],
   "categories": [
     {
       "id": "1",
-      "name": "Technology",
-      "description": "Technology and IT jobs",
-      "icon": "mdi-laptop",
-      "slug": "technology",
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "name": "Getting Started",
+      "slug": "getting-started",
+      "description": "Tutorials and guides for beginners",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "2",
-      "name": "Marketing",
-      "description": "Marketing and advertising jobs",
-      "icon": "mdi-bullhorn",
-      "slug": "marketing",
-      "isActive": true,
-      "order": 2,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "name": "Backend Development",
+      "slug": "backend-development",
+      "description": "Topics related to server-side development",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "3",
-      "name": "Finance",
-      "description": "Finance and accounting jobs",
-      "icon": "mdi-cash",
-      "slug": "finance",
-      "isActive": true,
-      "order": 3,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "name": "Frontend Development",
+      "slug": "frontend-development",
+      "description": "Everything about client-side development",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "4",
-      "name": "Healthcare",
-      "description": "Healthcare and medical jobs",
-      "icon": "mdi-medical-bag",
-      "slug": "healthcare",
-      "isActive": true,
-      "order": 4,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "name": "DevOps",
+      "slug": "devops",
+      "description": "Deployment, CI/CD, and infrastructure",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "5",
-      "name": "Education",
-      "description": "Education and teaching jobs",
-      "icon": "mdi-school",
-      "slug": "education",
-      "isActive": true,
-      "order": 5,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "name": "Career",
+      "slug": "career",
+      "description": "Career advice and professional development",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     }
   ],
-  "jobTypes": [
+  "comments": [
+    {
+      "id": "38d1c5c2-633e-4f13-aed9-4e34564fc6ae",
+      "postId": "sample-post-1",
+      "content": "This is a great sample post! Looking forward to more content.",
+      "authorId": "3",
+      "authorName": "Michael Johnson",
+      "createdAt": "2025-05-03T19:02:02.064Z",
+      "updatedAt": "2025-05-03T19:02:02.064Z"
+    },
+    {
+      "id": "cee66a73-b9d0-43ed-9e6f-5233a5f21ad3",
+      "postId": "sample-post-1",
+      "content": "I really like the layout and design of this blog. The comment system works great too!",
+      "authorId": "4",
+      "authorName": "Sarah Williams",
+      "createdAt": "2025-05-04T07:02:02.064Z",
+      "updatedAt": "2025-05-04T07:02:02.064Z"
+    },
+    {
+      "id": "f6bb41d9-fe2a-480a-8164-e1e6e808ed80",
+      "postId": "sample-post-1",
+      "content": "Thanks for sharing this example. It helped me understand how the blog system works.",
+      "authorId": "5",
+      "authorName": "David Brown",
+      "createdAt": "2025-05-04T13:02:02.064Z",
+      "updatedAt": "2025-05-04T13:02:02.064Z"
+    },
+    {
+      "id": "83346398-eaa5-4e2b-862a-0ab433525ec2",
+      "postId": "4461eff3-ed65-4ca3-9aef-78db1f9a024a",
+      "content": "Great article! I learned a lot about the MEVN stack.",
+      "authorId": "3",
+      "authorName": "Michael Johnson",
+      "createdAt": "2025-04-28T19:02:02.064Z",
+      "updatedAt": "2025-04-28T19:02:02.064Z"
+    },
+    {
+      "id": "1150dd2c-36fa-413a-b512-f9e8a597fc2e",
+      "postId": "4461eff3-ed65-4ca3-9aef-78db1f9a024a",
+      "content": "I've been using MEVN for my projects and it's been a great experience.",
+      "authorId": "4",
+      "authorName": "Sarah Williams",
+      "createdAt": "2025-04-29T19:02:02.064Z",
+      "updatedAt": "2025-04-29T19:02:02.064Z"
+    },
+    {
+      "id": "a24109e4-1594-4d23-8f15-3308c4c27806",
+      "postId": "4045f997-dc83-4945-89be-123d1de5c791",
+      "content": "Express.js makes building APIs so much easier. Thanks for the tutorial!",
+      "authorId": "5",
+      "authorName": "David Brown",
+      "createdAt": "2025-04-30T19:02:02.064Z",
+      "updatedAt": "2025-04-30T19:02:02.064Z"
+    },
+    {
+      "id": "772b55bd-dd61-443e-94b6-fe0cf83cf1c7",
+      "postId": "1",
+      "content": "Great article! I learned a lot about the MEVN stack.",
+      "authorId": "3",
+      "authorName": "Michael Johnson",
+      "createdAt": "2025-04-28T19:02:02.064Z",
+      "updatedAt": "2025-04-28T19:02:02.064Z"
+    },
+    {
+      "id": "3bd2a348-09b2-493f-8d3c-6ff0989fce71",
+      "postId": "1",
+      "content": "I've been using MEVN for my projects and it's been a great experience.",
+      "authorId": "4",
+      "authorName": "Sarah Williams",
+      "createdAt": "2025-04-29T19:02:02.064Z",
+      "updatedAt": "2025-04-29T19:02:02.064Z"
+    },
+    {
+      "id": "55a701c0-0e16-4666-8f66-14eefa8ac23e",
+      "postId": "2",
+      "content": "Express.js makes building APIs so much easier. Thanks for the tutorial!",
+      "authorId": "5",
+      "authorName": "David Brown",
+      "createdAt": "2025-04-30T19:02:02.064Z",
+      "updatedAt": "2025-04-30T19:02:02.064Z"
+    }
+  ],
+  "users": [
     {
       "id": "1",
-      "name": "Full-time",
-      "slug": "full-time",
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "password": "hashed_password_here",
+      "role": "admin",
+      "bio": "Full-stack developer with 5+ years of experience in MEVN stack.",
+      "avatar": "users/avatars/john-doe.jpg",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "2",
-      "name": "Part-time",
-      "slug": "part-time",
-      "isActive": true,
-      "order": 2,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "password": "hashed_password_here",
+      "role": "author",
+      "bio": "Backend developer specializing in Node.js and Express.",
+      "avatar": "users/avatars/jane-smith.jpg",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "3",
-      "name": "Contract",
-      "slug": "contract",
-      "isActive": true,
-      "order": 3,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "firstName": "Michael",
+      "lastName": "Johnson",
+      "email": "michael.johnson@example.com",
+      "password": "hashed_password_here",
+      "role": "user",
+      "bio": "Frontend enthusiast and UX designer.",
+      "avatar": "users/avatars/michael-johnson.jpg",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "4",
-      "name": "Freelance",
-      "slug": "freelance",
-      "isActive": true,
-      "order": 4,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "firstName": "Sarah",
+      "lastName": "Williams",
+      "email": "sarah.williams@example.com",
+      "password": "hashed_password_here",
+      "role": "user",
+      "bio": "DevOps engineer with a passion for automation.",
+      "avatar": "users/avatars/sarah-williams.jpg",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     },
     {
       "id": "5",
-      "name": "Internship",
-      "slug": "internship",
-      "isActive": true,
-      "order": 5,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
+      "firstName": "David",
+      "lastName": "Brown",
+      "email": "david.brown@example.com",
+      "password": "hashed_password_here",
+      "role": "user",
+      "bio": "Mobile developer and tech blogger.",
+      "avatar": "users/avatars/david-brown.jpg",
+      "createdAt": "2025-05-04T19:02:02.064Z",
+      "updatedAt": "2025-05-04T19:02:02.064Z"
     }
-  ],
-  "skills": [
-    {
-      "id": "1",
-      "name": "JavaScript",
-      "slug": "javascript",
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "2",
-      "name": "React",
-      "slug": "react",
-      "isActive": true,
-      "order": 2,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "3",
-      "name": "Vue.js",
-      "slug": "vue-js",
-      "isActive": true,
-      "order": 3,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "4",
-      "name": "Node.js",
-      "slug": "node-js",
-      "isActive": true,
-      "order": 4,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "5",
-      "name": "Python",
-      "slug": "python",
-      "isActive": true,
-      "order": 5,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    }
-  ],
-  "careerLevels": [
-    {
-      "id": "1",
-      "name": "Entry Level",
-      "slug": "entry-level",
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "2",
-      "name": "Mid Level",
-      "slug": "mid-level",
-      "isActive": true,
-      "order": 2,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "3",
-      "name": "Senior Level",
-      "slug": "senior-level",
-      "isActive": true,
-      "order": 3,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "4",
-      "name": "Manager",
-      "slug": "manager",
-      "isActive": true,
-      "order": 4,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "5",
-      "name": "Director",
-      "slug": "director",
-      "isActive": true,
-      "order": 5,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    }
-  ],
-  "experiences": [
-    {
-      "id": "1",
-      "name": "No Experience",
-      "slug": "no-experience",
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "2",
-      "name": "1-2 Years",
-      "slug": "1-2-years",
-      "isActive": true,
-      "order": 2,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "3",
-      "name": "3-5 Years",
-      "slug": "3-5-years",
-      "isActive": true,
-      "order": 3,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "4",
-      "name": "5-10 Years",
-      "slug": "5-10-years",
-      "isActive": true,
-      "order": 4,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "5",
-      "name": "10+ Years",
-      "slug": "10-plus-years",
-      "isActive": true,
-      "order": 5,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    }
-  ],
-  "tags": [
-    {
-      "id": "1",
-      "name": "Remote",
-      "slug": "remote",
-      "isActive": true,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "2",
-      "name": "Flexible Hours",
-      "slug": "flexible-hours",
-      "isActive": true,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "3",
-      "name": "High Salary",
-      "slug": "high-salary",
-      "isActive": true,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "4",
-      "name": "Startup",
-      "slug": "startup",
-      "isActive": true,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "5",
-      "name": "Enterprise",
-      "slug": "enterprise",
-      "isActive": true,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    }
-  ],
-  "locations": [
-    {
-      "id": "1",
-      "name": "United States",
-      "type": "country",
-      "code": "US",
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "2",
-      "name": "California",
-      "type": "state",
-      "countryId": "1",
-      "code": "CA",
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "3",
-      "name": "San Francisco",
-      "type": "city",
-      "countryId": "1",
-      "stateId": "2",
-      "latitude": 37.7749,
-      "longitude": -122.4194,
-      "isActive": true,
-      "order": 1,
-      "jobCount": 0,
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
-    }
-  ],
-  "applications": []
+  ]
 }

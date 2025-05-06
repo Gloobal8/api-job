@@ -1,0 +1,41 @@
+En AddressForm.vue hay campos que se llaman "País", "Código Postal", "Dirección" y me gustaria que en vez de cargar a traves de json se capturen los campos como en el console log
+Componentes de dirección: 
+{house_number: '2', road: 'Plaza de Jacinto Benavente', neighbourhood: 'Barrio de los Austrias', quarter: 'Sol', city_district: 'Centro', …}
+ISO3166-2-lvl4
+: 
+"ES-MD"
+city
+: 
+"Madrid"
+city_district
+: 
+"Centro"
+country
+: 
+"España"
+country_code
+: 
+"es"
+house_number
+: 
+"2"
+neighbourhood
+: 
+"Barrio de los Austrias"
+postcode
+: 
+"28012"
+quarter
+: 
+"Sol"
+road
+: 
+"Plaza de Jacinto Benavente"
+state
+: 
+"Comunidad de Madrid"
+[[Prototype]]
+: 
+Object
+es decir que inicialmente se vea el apartado del mapa donde pone "Haz clic para cargar el mapa", debajo el "Nombre de la dirección" y Un campo llamado País que al pulsar salga debajo un dropdown que contenga un buscador de opciones y los resultados que se extraigan de los que hablamos del console log donde dice country: "" y que si escribimos "e" me muestre los country que empiecen por la letra "e". Una vez elegido el country:"(por ejemplo) España" entonces se muestra el siguiente campo con dropdown por importancia como seria por ejemplo state:"Comunidad de Madrid", el siguiente city:"Madrid", el siguiente postcode:"28009", el siguiente tengo dudas porque no se cual esta por encima del otro que serian quarter:"Niño Jesús" y suburb:"Retiro", el siguiente seria road:"Avenida de Menéndez Pelayo" y el siguiente seria house_number:"67"
+Luego quedarian sin tocar el Comentario y Establecer como direccion principal. De esa manera ya sea clickando en el mapa y se cargasen los datos en los dropdown o ir seleccionando de mayor a menor como mostré de ejemplo

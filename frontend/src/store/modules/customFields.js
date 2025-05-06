@@ -19,7 +19,7 @@ const actions = {
   async fetchCustomFields({ commit }) {
     try {
       commit("setLoading", true);
-      const { data } = await axios.get("/api/custom-fields");
+      const { data } = await axios.get("/custom-fields");
       commit("setCustomFields", data);
       commit("setLoading", false);
     } catch (error) {
@@ -34,7 +34,7 @@ const actions = {
   async fetchCustomFieldsByEntity({ commit }, entity) {
     try {
       commit("setLoading", true);
-      const { data } = await axios.get(`/api/custom-fields/entity/${entity}`);
+      const { data } = await axios.get(`/custom-fields/entity/${entity}`);
       commit("setCustomFields", data);
       commit("setLoading", false);
     } catch (error) {
@@ -49,7 +49,7 @@ const actions = {
   async createCustomField({ commit }, fieldData) {
     try {
       commit("setLoading", true);
-      const { data } = await axios.post("/api/custom-fields", fieldData);
+      const { data } = await axios.post("/custom-fields", fieldData);
       commit("addCustomField", data);
       commit("setLoading", false);
       return data;
@@ -66,7 +66,7 @@ const actions = {
   async updateCustomField({ commit }, { id, fieldData }) {
     try {
       commit("setLoading", true);
-      const { data } = await axios.put(`/api/custom-fields/${id}`, fieldData);
+      const { data } = await axios.put(`/custom-fields/${id}`, fieldData);
       commit("updateCustomField", data);
       commit("setLoading", false);
       return data;
@@ -84,7 +84,7 @@ const actions = {
   async deleteCustomField({ commit }, id) {
     try {
       commit("setLoading", true);
-      await axios.delete(`/api/custom-fields/${id}`);
+      await axios.delete(`/custom-fields/${id}`);
       commit("removeCustomField", id);
       commit("setLoading", false);
     } catch (error) {

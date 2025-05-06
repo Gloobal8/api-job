@@ -41,9 +41,16 @@
           <v-list-item-title>Home</v-list-item-title>
         </v-list-item>
 
+        <v-list-item to="/dashboard" link>
+          <template v-slot:prepend>
+            <v-icon>mdi-view-dashboard-outline</v-icon>
+          </template>
+          <v-list-item-title>Dashboard</v-list-item-title>
+        </v-list-item>
+
         <v-list-item to="/jobs" link>
           <template v-slot:prepend>
-            <v-icon>mdi-briefcase</v-icon>
+            <v-icon>mdi-briefcase-outline</v-icon>
           </template>
           <v-list-item-title>Jobs</v-list-item-title>
         </v-list-item>
@@ -62,19 +69,56 @@
           <v-list-item-title>Profile</v-list-item-title>
         </v-list-item>
 
-        <!--<v-list-item to="/messages" link>
+        <v-list-item to="/messages" link>
           <template v-slot:prepend>
             <v-icon>mdi-message</v-icon>
           </template>
           <v-list-item-title>Messages</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/notifications" link>
+        <!--<v-list-item to="/notifications" link>
           <template v-slot:prepend>
             <v-icon>mdi-bell</v-icon>
           </template>
           <v-list-item-title>Notifications</v-list-item-title>
         </v-list-item>-->
+
+        <v-list-group value="false" prepend-icon="mdi-post-outline">
+          <template v-slot:activator="{ props }">
+            <v-list-item v-bind="props" title="Blog"></v-list-item>
+          </template>
+
+          <!-- Subelementos del blog -->
+          <v-list-item to="/blog" link>
+            <template v-slot:prepend>
+              <v-icon>mdi-view-list</v-icon>
+            </template>
+            <v-list-item-title>All Articles</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item to="/blog/categories" link>
+            <template v-slot:prepend>
+              <v-icon>mdi-tag-multiple</v-icon>
+            </template>
+            <v-list-item-title>Categories</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item to="/blog/create" link
+            ><!--v-if="isLoggedIn"-->
+            <template v-slot:prepend>
+              <v-icon>mdi-pencil</v-icon>
+            </template>
+            <v-list-item-title>Write Article</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item to="/blog/my-posts" link
+            ><!--v-if="isLoggedIn"-->
+            <template v-slot:prepend>
+              <v-icon>mdi-account-edit</v-icon>
+            </template>
+            <v-list-item-title>My Posts</v-list-item-title>
+          </v-list-item>
+        </v-list-group>
 
         <v-list-item to="/site-map" link>
           <template v-slot:prepend>
@@ -102,10 +146,13 @@
     </v-navigation-drawer>
 
     <v-main>
-      <v-container fluid>
+      <v-container fluid class="nopad">
         <router-view></router-view>
       </v-container>
     </v-main>
+
+    <!-- Snackbar global -->
+    <snackbar />
 
     <v-footer app>
       <span>&copy; {{ new Date().getFullYear() }} - Job Board</span>
@@ -115,11 +162,13 @@
 
 <script>
 import LanguageSelector from "@/components/localization/LanguageSelector.vue";
+import Snackbar from "@/components/common/Snackbar.vue";
 
 export default {
   name: "App",
   components: {
     LanguageSelector,
+    Snackbar,
   },
   data: () => ({
     drawer: false,
@@ -138,3 +187,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.v-container.nopad {
+  padding: 0 !important;
+}
+</style>

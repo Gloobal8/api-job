@@ -128,6 +128,53 @@
               </v-chip>
             </v-chip-group>
 
+            <div
+              v-if="
+                selectedFile?.codeExamples &&
+                selectedFile.codeExamples.length > 0
+              "
+              class="mt-4"
+            >
+              <h3 class="text-subtitle-1 font-weight-bold mb-2">
+                Ejemplos de Uso
+              </h3>
+              <div
+                v-for="(example, index) in selectedFile.codeExamples"
+                :key="index"
+                class="mb-4"
+              >
+                <p class="font-weight-medium mb-2">{{ example.title }}</p>
+                <v-card
+                  variant="elevated"
+                  style="
+                    padding: 15px;
+                    background: #2e2e4c;
+                    color: lightskyblue;
+                  "
+                >
+                  <v-card-text class="pa-0">
+                    <pre
+                      class="language-javascript mb-0"
+                    ><code>{{ example.code }}</code></pre>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="copyToClipboard(example.code)"
+                    >
+                      <v-icon size="small" class="mr-1"
+                        >mdi-content-copy</v-icon
+                      >
+                      Copiar
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </div>
+            </div>
+
             <v-alert
               v-if="selectedFile.criticalRelations"
               density="compact"
@@ -153,6 +200,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Snackbar para notificaciones -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+    >
+      {{ snackbar.text }}
+      <template v-slot:actions>
+        <v-btn variant="text" @click="snackbar.show = false"> Cerrar </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -1532,6 +1591,153 @@ export default {
                         },
                       ],
                     },
+                    {
+                      id: "frontend-components-ui",
+                      name: "Ui",
+                      type: "folder",
+                      children: [
+                        {
+                          id: "collapsible-list-component",
+                          name: "CollapsibleList.vue",
+                          type: "frontend",
+                          fileType: "vue",
+                          description:
+                            "Componente reutilizable que permite colapsar y expandir listas HTML (<ul><li>) con un efecto de degradado y un botón para mostrar/ocultar.",
+                          purpose:
+                            "Mejorar la experiencia de usuario al mostrar listas largas de manera más compacta, permitiendo al usuario expandirlas cuando sea necesario.",
+                          functions: [
+                            {
+                              name: "toggleCollapse",
+                              description:
+                                "Alterna entre el estado colapsado y expandido de la lista",
+                            },
+                            {
+                              name: "checkListItems",
+                              description:
+                                "Verifica si la lista tiene suficientes elementos para justificar el colapso",
+                            },
+                          ],
+                          relatedFiles: [
+                            {
+                              id: "collapsible-list-directive",
+                              name: "collapsibleList.js (directiva)",
+                              type: "frontend",
+                              fileType: "js",
+                            },
+                            {
+                              id: "job-detail-view",
+                              name: "jobs/JobDetailView.vue",
+                              type: "frontend",
+                              fileType: "vue",
+                            },
+                            {
+                              id: "main-js",
+                              name: "main.js",
+                              type: "frontend",
+                              fileType: "js",
+                            },
+                          ],
+                          codeExamples: [
+                            {
+                              title:
+                                "1.1.- Uso básico del componente (Template)",
+                              code: `<template>
+  <div>
+    <h2 class="text-h6 mb-3">Requirements</h2>
+    <CollapsibleList>
+      <div v-html="job.requirements"></div>
+    </CollapsibleList>
+  </div>
+</template>`,
+                            },
+                            {
+                              title:
+                                "1.2.- Script del componente básico (Script)",
+                              code: `import CollapsibleList from '@/components/ui/CollapsibleList.vue';
+
+export default {
+  components: {
+    CollapsibleList
+  }
+  // ...resto del código
+}`,
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  id: "frontend-directives",
+                  name: "Directivas",
+                  type: "folder",
+                  children: [
+                    {
+                      id: "collapsible-list-directive",
+                      name: "collapsibleList.js",
+                      type: "frontend",
+                      fileType: "js",
+                      description:
+                        "Directiva personalizada de Vue que añade funcionalidad de colapso a cualquier elemento que contenga listas (<ul><li>). Permite truncar listas largas con un efecto de degradado y un botón para expandir/colapsar.",
+                      purpose:
+                        "Proporcionar una forma sencilla de aplicar la funcionalidad de colapso a cualquier lista en la aplicación sin necesidad de importar componentes adicionales.",
+                      functions: [
+                        {
+                          name: "mounted",
+                          description:
+                            "Configura la funcionalidad de colapso cuando el elemento se monta en el DOM",
+                        },
+                        {
+                          name: "toggleCollapse",
+                          description:
+                            "Función que alterna entre el estado colapsado y expandido",
+                        },
+                      ],
+                      relatedFiles: [
+                        {
+                          id: "collapsible-list-component",
+                          name: "ui/CollapsibleList.vue",
+                          type: "frontend",
+                          fileType: "vue",
+                        },
+                        {
+                          id: "main-js",
+                          name: "main.js",
+                          type: "frontend",
+                          fileType: "js",
+                        },
+                        {
+                          id: "job-detail-view",
+                          name: "jobs/JobDetailView.vue",
+                          type: "frontend",
+                          fileType: "vue",
+                        },
+                      ],
+                      codeExamples: [
+                        {
+                          title: "2.1.- Uso de la directiva (Template)",
+                          code: `<template>
+  <div>
+    <h2 class="text-h6 mb-3">Requirements</h2>
+    <div v-collapsible-list="{ maxItems: 5, collapsedHeight: 200 }" v-html="job.requirements"></div>
+  </div>
+</template>`,
+                        },
+                        {
+                          title: "2.2.- Registro de la directiva en main.js",
+                          code: `// src/main.js
+import { createApp } from 'vue';
+import App from './App.vue';
+import collapsibleList from './directives/collapsibleList';
+
+const app = createApp(App);
+app.directive('collapsible-list', collapsibleList);
+// ... resto de tu código
+app.mount('#app');`,
+                        },
+                      ],
+                    },
                   ],
                 },
                 {
@@ -1773,6 +1979,13 @@ export default {
           ],
         },
       ],
+      // Añadir configuración del snackbar
+      snackbar: {
+        show: false,
+        text: "",
+        color: "success",
+        timeout: 3000,
+      },
     };
   },
   methods: {
@@ -1833,6 +2046,31 @@ export default {
       if (file) {
         this.selectedFile = file;
       }
+    },
+
+    // Método para copiar al portapapeles
+    copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(
+        () => {
+          // Mostrar snackbar en lugar de alert
+          this.snackbar = {
+            show: true,
+            text: "Código copiado al portapapeles",
+            color: "success",
+            timeout: 3000,
+          };
+        },
+        (err) => {
+          console.error("Error al copiar texto: ", err);
+          // Mostrar mensaje de error en el snackbar
+          this.snackbar = {
+            show: true,
+            text: "Error al copiar el código",
+            color: "error",
+            timeout: 3000,
+          };
+        }
+      );
     },
   },
 };

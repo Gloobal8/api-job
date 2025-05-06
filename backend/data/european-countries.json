@@ -1,0 +1,102 @@
+[
+  {
+    "name": "España",
+    "code": "ES",
+    "flag": "/uploads/flags/es.svg"
+  },
+  {
+    "name": "Francia",
+    "code": "FR",
+    "flag": "/uploads/flags/fr.svg"
+  },
+  {
+    "name": "Alemania",
+    "code": "DE",
+    "flag": "/uploads/flags/de.svg"
+  },
+  {
+    "name": "Italia",
+    "code": "IT",
+    "flag": "/uploads/flags/it.svg"
+  },
+  {
+    "name": "Portugal",
+    "code": "PT",
+    "flag": "/uploads/flags/pt.svg"
+  },
+  {
+    "name": "Reino Unido",
+    "code": "GB",
+    "flag": "/uploads/flags/gb.svg"
+  },
+  {
+    "name": "Irlanda",
+    "code": "IE",
+    "flag": "/uploads/flags/ie.svg"
+  },
+  {
+    "name": "Bélgica",
+    "code": "BE",
+    "flag": "/uploads/flags/be.svg"
+  },
+  {
+    "name": "Países Bajos",
+    "code": "NL",
+    "flag": "/uploads/flags/nl.svg"
+  },
+  {
+    "name": "Suiza",
+    "code": "CH",
+    "flag": "/uploads/flags/ch.svg"
+  },
+  {
+    "name": "Austria",
+    "code": "AT",
+    "flag": "/uploads/flags/at.svg"
+  },
+  {
+    "name": "Grecia",
+    "code": "GR",
+    "flag": "/uploads/flags/gr.svg"
+  },
+  {
+    "name": "Suecia",
+    "code": "SE",
+    "flag": "/uploads/flags/se.svg"
+  },
+  {
+    "name": "Noruega",
+    "code": "NO",
+    "flag": "/uploads/flags/no.svg"
+  },
+  {
+    "name": "Dinamarca",
+    "code": "DK",
+    "flag": "/uploads/flags/dk.svg"
+  },
+  {
+    "name": "Finlandia",
+    "code": "FI",
+    "flag": "/uploads/flags/fi.svg"
+  },
+  {
+    "name": "Polonia",
+    "code": "PL",
+    "flag": "/uploads/flags/pl.svg"
+  },
+  {
+    "name": "República Checa",
+    "code": "CZ",
+    "flag": "/uploads/flags/cz.svg"
+  },
+  {
+    "name": "Hungría",
+    "code": "HU",
+    "flag": "/uploads/flags/hu.svg"
+  },
+  {
+    "name": "Rumanía",
+    "code": "RO",
+    "flag": "/uploads/flags/ro.svg"
+  }
+]

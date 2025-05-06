@@ -5,10 +5,12 @@ import localization from "./modules/localization";
 import testimonials from "./modules/testimonials";
 import reviews from "./modules/reviews";
 import blog from "./modules/blog";
+import snackbar from "./modules/snackbar";
 
 export default createStore({
   state: {
     user: null,
+    isAuthenticated: false,
     token: localStorage.getItem("token") || "",
     isLoading: false,
     error: null,
@@ -16,6 +18,10 @@ export default createStore({
     userExperience: [],
     userTransactions: [],
     userCredits: { balance: 0, history: [] },
+    auth: {
+      user: null,
+      isAuthenticated: false,
+    },
   },
   modules: {
     customFields,
@@ -23,6 +29,7 @@ export default createStore({
     testimonials,
     reviews,
     blog,
+    snackbar,
     // Otros módulos...
   },
   mutations: {

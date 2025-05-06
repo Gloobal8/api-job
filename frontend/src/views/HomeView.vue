@@ -1069,6 +1069,8 @@ export default {
     },
     fetchTopCompanies() {
       setTimeout(() => {
+        // Asegurarse de que topCompanies sea al menos un array vacío antes de asignar datos
+        this.topCompanies = this.topCompanies || [];
         this.topCompanies = [
           {
             id: 1,

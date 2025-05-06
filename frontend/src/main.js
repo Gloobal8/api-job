@@ -2,15 +2,27 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import { imageDirectives } from "./directives/image-directives";
 import AppImage from "./components/common/AppImage.vue";
+import imageHelper from "./plugins/imageHelper";
 import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
 import i18n from "./i18n";
 import moment from "moment";
 import axios from "axios";
+import "./assets/styles/global.css";
+import collapsibleList from "./directives/collapsibleList";
 
 // Crear la aplicación
 const app = createApp(App);
+
+console.log(
+  "Available routes:",
+  router.getRoutes().map((route) => ({
+    name: route.name,
+    path: route.path,
+    component: route.components?.default?.name,
+  }))
+);
 
 // Sistema de gestión de imágenes
 // Incluye directivas personalizadas y componente reutilizable para optimización y lazy loading
@@ -20,6 +32,7 @@ Object.keys(imageDirectives).forEach((key) => {
 
 // Registrar componente global de imágenes
 app.component("AppImage", AppImage);
+app.directive("collapsible-list", collapsibleList);
 
 // Funciones de formato de fecha
 app.config.globalProperties.$filters = {
@@ -54,4 +67,10 @@ app.config.globalProperties.$imageConfig = {
 app.config.globalProperties.$axios = axios;
 
 // Montar la aplicación después de configurar todo
-app.use(router).use(store).use(vuetify).use(i18n).mount("#app");
+app
+  .use(router)
+  .use(store)
+  .use(vuetify)
+  .use(i18n)
+  .use(imageHelper)
+  .mount("#app");

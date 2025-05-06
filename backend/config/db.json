@@ -1,4 +1,124 @@
 {
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "password": "hashed_password",
+      "role": "jobseeker",
+      "created_at": "2025-04-10T08:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "password": "hashed_password",
+      "role": "employer",
+      "company_id": 1,
+      "created_at": "2025-04-11T09:30:00Z"
+    },
+    {
+      "id": "db019b0e-7906-49cb-92a0-85ddc5879baa",
+      "name": "gonzalo de villa",
+      "email": "g.devillamor@gmail.com",
+      "password": "$2a$08$96datm0XXoFW6xRcHCi95OTabaL5Ywz1.CpN0Hn7vJSzMaxkkmopm",
+      "role": "jobseeker",
+      "createdAt": "2025-04-30T05:09:19.352Z",
+      "updatedAt": "2025-04-30T05:09:19.352Z"
+    }
+  ],
+  "addresses": [
+    {
+      "id": "9e18c1ba-ab3a-45cd-afdf-d3ed23d07f81",
+      "name": "Nombre de prueba",
+      "country": "España",
+      "province": "Madrid",
+      "city": "Madrid",
+      "postalCode": "28002",
+      "address": "Calle de Rafael Bergamín",
+      "comment": "Ensenada de la jungla trans el apeadero",
+      "isPrimary": true,
+      "createdAt": "2025-04-19T05:25:26.583Z",
+      "updatedAt": "2025-04-19T09:55:09.011Z",
+      "latitude": 40.4470239,
+      "longitude": -3.6604752
+    },
+    {
+      "id": "88ea3333-a15d-4243-9f14-da6c47a1b30d",
+      "name": "Dirección en San Sebastián",
+      "country": "España",
+      "province": "Guipúzcoa",
+      "city": "Donostia / San Sebastián",
+      "postalCode": "20005",
+      "address": "Calle Getaria, 2",
+      "comment": "",
+      "isPrimary": false,
+      "createdAt": "2025-04-19T06:41:30.445Z",
+      "latitude": 43.3194139,
+      "longitude": -1.9816706,
+      "updatedAt": "2025-04-19T10:04:30.336Z"
+    },
+    {
+      "id": "b999aeab-694e-4ab5-962e-352695c96810",
+      "name": "kokotxa",
+      "country": "España",
+      "province": "Guipúzcoa",
+      "city": "Donostia / San Sebastián",
+      "postalCode": "20005",
+      "address": "C/ de San Martín, 17",
+      "comment": "",
+      "isPrimary": false,
+      "createdAt": "2025-04-19T07:56:13.926Z",
+      "latitude": 43.3187744,
+      "longitude": -1.9798849,
+      "updatedAt": "2025-04-19T10:05:21.569Z"
+    },
+    {
+      "id": "f1af060f-c07e-4e43-b7fd-ef558d27f56d",
+      "name": "Dirección en Madrid",
+      "country": "España",
+      "province": "Madrid",
+      "city": "Madrid",
+      "postalCode": "28001",
+      "address": "Calle del Nuncio",
+      "comment": "",
+      "isPrimary": false,
+      "createdAt": "2025-04-19T13:59:08.895Z",
+      "latitude": 40.4133079,
+      "longitude": -3.7095642,
+      "updatedAt": "2025-04-19T14:00:41.921Z"
+    },
+    {
+      "id": "2b2b00be-0c70-43a4-a4e8-cc2a2c835d2f",
+      "name": "Dirección en Madrid",
+      "country": "España",
+      "province": "Madrid",
+      "city": "Madrid",
+      "postalCode": "28045",
+      "address": "Calle de Embajadores, 165",
+      "comment": "",
+      "isPrimary": false,
+      "createdAt": "2025-04-22T01:49:48.260Z",
+      "latitude": 40.3951888,
+      "longitude": -3.6950742,
+      "updatedAt": "2025-04-22T01:51:42.911Z"
+    },
+    {
+      "id": "9ec143b5-a96c-4db3-83a8-54e0e93d71b2",
+      "name": "Dirección en Madrid",
+      "country": "España",
+      "province": "Madrid",
+      "city": "Madrid",
+      "postalCode": "28012",
+      "address": "Calle de la Colegiata, 4",
+      "comment": "",
+      "isPrimary": false,
+      "createdAt": "2025-04-22T01:51:19.132Z",
+      "latitude": 40.4128249,
+      "longitude": -3.7056719,
+      "updatedAt": "2025-04-22T01:51:25.998Z"
+    }
+  ],
   "jobs": [
     {
       "id": 1,
@@ -77,34 +197,6 @@
       "location": "Sevilla, España",
       "industry": "Data Analytics",
       "featured": true
-    }
-  ],
-  "users": [
-    {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "password": "hashed_password",
-      "role": "jobseeker",
-      "created_at": "2025-04-10T08:00:00Z"
-    },
-    {
-      "id": 2,
-      "name": "Jane Smith",
-      "email": "jane@example.com",
-      "password": "hashed_password",
-      "role": "employer",
-      "company_id": 1,
-      "created_at": "2025-04-11T09:30:00Z"
-    },
-    {
-      "id": "db019b0e-7906-49cb-92a0-85ddc5879baa",
-      "name": "gonzalo de villa",
-      "email": "g.devillamor@gmail.com",
-      "password": "$2a$08$96datm0XXoFW6xRcHCi95OTabaL5Ywz1.CpN0Hn7vJSzMaxkkmopm",
-      "role": "jobseeker",
-      "createdAt": "2025-04-30T05:09:19.352Z",
-      "updatedAt": "2025-04-30T05:09:19.352Z"
     }
   ],
   "applications": [

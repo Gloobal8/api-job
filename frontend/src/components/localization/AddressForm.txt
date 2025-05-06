@@ -1,0 +1,1097 @@
+<template>
+  <v-card>
+    <v-card-title class="text-h5">
+      {{ isEditing ? "Editar Dirección" : "Añadir Nueva Dirección" }}
+    </v-card-title>
+
+    <v-card-text>
+      <!-- Mapa de Leaflet -->
+      <div class="map-container mb-4">
+        <div v-if="!showMap" class="map-placeholder" @click="initializeMap">
+          <v-icon size="large" color="primary">mdi-map</v-icon>
+          <div class="text-body-1 mt-2">Haz clic para cargar el mapa</div>
+        </div>
+
+        <div v-else>
+          <div class="map-search">
+            <v-text-field
+              v-model="searchAddress"
+              label="Buscar dirección"
+              placeholder="Escribe una dirección para buscar"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              hide-details
+              @keyup.enter="searchLocation"
+            >
+              <template v-slot:append>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  @click="searchLocation"
+                  :disabled="!searchAddress"
+                >
+                  <v-icon>mdi-magnify</v-icon>
+                </v-btn>
+              </template>
+            </v-text-field>
+          </div>
+
+          <l-map
+            ref="map"
+            v-model:zoom="zoom"
+            v-model:center="center"
+            :use-global-leaflet="false"
+            @click="onMapClick"
+            style="height: 300px; width: 100%"
+          >
+            <l-tile-layer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              layer-type="base"
+              name="OpenStreetMap"
+            ></l-tile-layer>
+
+            <l-marker
+              v-if="markerPosition"
+              :lat-lng="markerPosition"
+              :draggable="true"
+              @dragend="onMarkerDragEnd"
+            ></l-marker>
+          </l-map>
+
+          <div class="map-instructions">
+            <v-chip color="primary" size="small">
+              <v-icon start size="small">mdi-information</v-icon>
+              Haz clic en el mapa para seleccionar una ubicación
+            </v-chip>
+          </div>
+
+          <div class="map-location-button">
+            <v-btn
+              icon
+              color="primary"
+              size="small"
+              variant="tonal"
+              @click="useCurrentLocation"
+              :loading="loadingLocation"
+            >
+              <v-icon>mdi-crosshairs-gps</v-icon>
+            </v-btn>
+          </div>
+        </div>
+      </div>
+
+      <v-form ref="form" v-model="isFormValid" @submit.prevent="saveAddress">
+        <!-- Nombre de la dirección -->
+        <v-text-field
+          v-model="formData.name"
+          label="Nombre de la dirección"
+          hint="Ej: Casa, Trabajo, Casa de mis padres..."
+          persistent-hint
+          :rules="[(v) => !!v || 'El nombre es obligatorio']"
+          class="mb-3"
+        ></v-text-field>
+
+        <!-- País -->
+        <v-autocomplete
+          v-model="formData.country"
+          :items="countries"
+          item-title="name"
+          item-value="name"
+          label="País"
+          :rules="[(v) => !!v || 'El país es obligatorio']"
+          return-object
+          @update:model-value="onCountryChange"
+          class="mb-3"
+        >
+          <template v-slot:selection="{ item, props }">
+            <div class="d-flex align-center">
+              <div class="flag-icon mr-2">
+                <img
+                  :src="item.raw.flag"
+                  :alt="item.raw.name"
+                  class="flag-img"
+                />
+              </div>
+              {{ item.raw.name }}
+            </div>
+          </template>
+
+          <template v-slot:item="{ item, props }">
+            <v-list-item v-bind="props">
+              <template v-slot:prepend>
+                <div class="flag-icon">
+                  <img
+                    :src="item.raw.flag"
+                    :alt="item.raw.name"
+                    class="flag-img"
+                  />
+                </div>
+              </template>
+              <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+            </v-list-item>
+          </template>
+        </v-autocomplete>
+
+        <!-- Provincia (solo para España) -->
+        <v-autocomplete
+          v-if="isSpain"
+          v-model="formData.province"
+          :items="provinces"
+          item-title="name"
+          item-value="name"
+          label="Provincia"
+          :rules="[(v) => !!v || 'La provincia es obligatoria']"
+          return-object
+          @update:model-value="onProvinceChange"
+          class="mb-3"
+        ></v-autocomplete>
+
+        <!-- Población (solo para España) -->
+        <v-autocomplete
+          v-if="isSpain && formData.province"
+          v-model="formData.city"
+          :items="cities"
+          item-title="name"
+          item-value="name"
+          label="Población"
+          :rules="[(v) => !!v || 'La población es obligatoria']"
+          return-object
+          @update:model-value="onCityChange"
+          class="mb-3"
+        ></v-autocomplete>
+
+        <!-- Código Postal -->
+        <v-text-field
+          v-model="formData.postalCode"
+          label="Código Postal"
+          :rules="postalCodeRules"
+          type="text"
+          maxlength="10"
+          class="mb-3"
+        ></v-text-field>
+
+        <!-- Dirección -->
+        <v-text-field
+          v-model="formData.address"
+          label="Dirección"
+          :rules="[(v) => !!v || 'La dirección es obligatoria']"
+          hint="Calle, número, piso, puerta, etc."
+          persistent-hint
+          class="mb-3"
+        ></v-text-field>
+
+        <!-- Comentario -->
+        <v-textarea
+          v-model="formData.comment"
+          label="Comentario (opcional)"
+          hint="Información adicional sobre la dirección"
+          persistent-hint
+          rows="3"
+          class="mb-3"
+        ></v-textarea>
+
+        <!-- Dirección principal -->
+        <v-checkbox
+          v-model="formData.isPrimary"
+          label="Establecer como dirección principal"
+          hint="Esta será tu dirección predeterminada"
+          persistent-hint
+          class="mb-3"
+        ></v-checkbox>
+      </v-form>
+    </v-card-text>
+
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="grey-darken-1" variant="text" @click="cancel">
+        Cancelar
+      </v-btn>
+      <v-btn
+        color="primary"
+        :loading="isSaving"
+        :disabled="!isFormValid"
+        @click="saveAddress"
+      >
+        {{ isEditing ? "Actualizar" : "Guardar" }}
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</template>
+
+<script>
+import axios from "axios";
+import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
+import "leaflet/dist/leaflet.css";
+import { Icon } from "leaflet";
+
+// Arreglar el problema del ícono de Leaflet para Vue 3
+delete Icon.Default.prototype._getIconUrl;
+Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL(
+    "leaflet/dist/images/marker-icon-2x.png",
+    import.meta.url
+  ).href,
+  iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url).href,
+  shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url)
+    .href,
+});
+
+export default {
+  name: "AddressForm",
+  components: {
+    LMap,
+    LTileLayer,
+    LMarker,
+  },
+  props: {
+    address: {
+      type: Object,
+      default: null,
+    },
+    isEditing: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data() {
+    return {
+      isFormValid: false,
+      isSaving: false,
+      formData: {
+        name: "",
+        country: null,
+        province: null,
+        city: null,
+        postalCode: "",
+        address: "",
+        comment: "",
+        isPrimary: false,
+        latitude: null,
+        longitude: null,
+      },
+      countries: [],
+      provinces: [],
+      cities: [],
+      currentAddress: null,
+
+      // Datos para el mapa
+      showMap: false,
+      center: [40.416775, -3.70379], // Madrid, España por defecto
+      zoom: 13,
+      markerPosition: null,
+      searchAddress: "",
+      loadingLocation: false,
+      tempProvinceName: null,
+      tempCityName: null,
+    };
+  },
+  computed: {
+    isSpain() {
+      return this.formData.country && this.formData.country.code === "ES";
+    },
+    postalCodeRules() {
+      if (this.isSpain) {
+        return [
+          (v) => !!v || "El código postal es obligatorio",
+          (v) => /^\d{5}$/.test(v) || "El código postal debe tener 5 dígitos",
+        ];
+      } else {
+        return [(v) => !!v || "El código postal es obligatorio"];
+      }
+    },
+  },
+  methods: {
+    async loadCountries() {
+      try {
+        // Cargar países de Europa desde el archivo JSON
+        const response = await axios.get("/data/european-countries.json");
+        this.countries = response.data.map((country) => ({
+          name: country.name,
+          code: country.code,
+          flag: `/img/flags/${country.code.toLowerCase()}.svg`,
+        }));
+      } catch (error) {
+        console.error("Error loading countries:", error);
+        this.countries = [];
+      }
+    },
+
+    // Mejorar la carga de provincias para manejar nombres temporales
+    async loadProvinces() {
+      if (!this.isSpain) return;
+
+      try {
+        // Cargar provincias de España desde el archivo JSON
+        const response = await axios.get("/data/spanish-provinces.json");
+        this.provinces = response.data;
+        console.log("Provincias cargadas:", this.provinces.length);
+
+        // Intentar asignar provincia si tenemos un nombre temporal
+        if (this.tempProvinceName) {
+          console.log(
+            "Intentando asignar provincia temporal:",
+            this.tempProvinceName
+          );
+          this.findAndSetProvince(this.tempProvinceName);
+          this.tempProvinceName = null;
+        }
+
+        return this.provinces;
+      } catch (error) {
+        console.error("Error loading provinces:", error);
+        this.provinces = [];
+        return [];
+      }
+    },
+
+    // Mejorar la carga de ciudades para manejar nombres temporales
+    async loadCities(provinceCode) {
+      if (!this.isSpain || !provinceCode) return [];
+
+      try {
+        // Cargar ciudades de la provincia seleccionada
+        const response = await axios.get(
+          `/data/spanish-cities.json?province=${provinceCode}`
+        );
+        this.cities = response.data;
+        console.log(
+          "Ciudades cargadas para provincia",
+          provinceCode,
+          ":",
+          this.cities.length
+        );
+
+        // Intentar asignar ciudad si tenemos un nombre temporal
+        if (this.tempCityName) {
+          console.log("Intentando asignar ciudad temporal:", this.tempCityName);
+          this.findAndSetCity(this.tempCityName);
+          this.tempCityName = null;
+        }
+
+        return this.cities;
+      } catch (error) {
+        console.error("Error loading cities:", error);
+        this.cities = [];
+        return [];
+      }
+    },
+
+    async onCountryChange(country) {
+      // Resetear provincia y ciudad si cambia el país
+      this.formData.province = null;
+      this.formData.city = null;
+
+      if (country && country.code === "ES") {
+        await this.loadProvinces();
+      }
+    },
+
+    async onProvinceChange(province) {
+      // Resetear ciudad si cambia la provincia
+      this.formData.city = null;
+
+      if (province) {
+        await this.loadCities(province.code);
+      }
+    },
+
+    onCityChange(city) {
+      if (city && city.postalCode) {
+        this.formData.postalCode = city.postalCode;
+      }
+    },
+
+    // Inicializar el mapa
+    initializeMap() {
+      this.showMap = true;
+
+      // Si tenemos coordenadas, centrar el mapa y colocar el marcador
+      if (this.formData.latitude && this.formData.longitude) {
+        this.center = [this.formData.latitude, this.formData.longitude];
+        this.markerPosition = [this.formData.latitude, this.formData.longitude];
+      }
+
+      this.$nextTick(() => {
+        if (this.address && this.address.address && !this.markerPosition) {
+          // Si tenemos una dirección pero no coordenadas, buscarla
+          this.searchAddress = this.address.address;
+          this.searchLocation();
+        }
+      });
+    },
+
+    // Manejar clic en el mapa con mejor sincronización
+    async onMapClick(event) {
+      const { lat, lng } = event.latlng;
+      this.markerPosition = [lat, lng];
+
+      // Guardar coordenadas en el formulario
+      this.formData.latitude = lat;
+      this.formData.longitude = lng;
+
+      // Si ya tenemos un país seleccionado y es España, asegurarse de que las provincias estén cargadas
+      if (this.isSpain && this.provinces.length === 0) {
+        console.log("Cargando provincias antes de geocodificar...");
+        await this.loadProvinces();
+      }
+
+      // Realizar geocodificación inversa
+      this.updateFormFromCoordinates(lat, lng);
+    },
+
+    // Manejar arrastre del marcador
+    onMarkerDragEnd(event) {
+      const { lat, lng } = event.target.getLatLng();
+      this.markerPosition = [lat, lng];
+      this.updateFormFromCoordinates(lat, lng);
+    },
+
+    // Actualizar formulario desde coordenadas - eliminar User-Agent
+    async updateFormFromCoordinates(lat, lng) {
+      // Guardar coordenadas en el formulario
+      this.formData.latitude = lat;
+      this.formData.longitude = lng;
+
+      // Realizar geocodificación inversa para obtener la dirección
+      try {
+        // Usar Nominatim (servicio gratuito de OpenStreetMap)
+        const response = await axios.get(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+          {
+            headers: {
+              "Accept-Language": "es", // Para obtener resultados en español
+            },
+          }
+        );
+
+        if (response.data) {
+          console.log("Respuesta de geocodificación inversa:", response.data);
+          this.processNominatimResult(response.data);
+        }
+      } catch (error) {
+        console.error("Error in reverse geocoding:", error);
+
+        // Intento de recuperación con zoom diferente
+        try {
+          console.log("Intentando con zoom diferente...");
+          const retryResponse = await axios.get(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`,
+            {
+              headers: {
+                "Accept-Language": "es",
+              },
+            }
+          );
+
+          if (retryResponse.data) {
+            console.log("Respuesta de retry:", retryResponse.data);
+            this.processNominatimResult(retryResponse.data);
+          }
+        } catch (retryError) {
+          console.error(
+            "Error en segundo intento de geocodificación:",
+            retryError
+          );
+        }
+      }
+    },
+
+    // Búsqueda de ubicación - eliminar User-Agent
+    async searchLocation() {
+      if (!this.searchAddress) return;
+
+      try {
+        // Usar Nominatim (servicio gratuito de OpenStreetMap)
+        const response = await axios.get(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            this.searchAddress
+          )}&limit=1&addressdetails=1`,
+          {
+            headers: {
+              "Accept-Language": "es", // Para obtener resultados en español
+              // Eliminar User-Agent
+            },
+          }
+        );
+
+        if (response.data && response.data.length > 0) {
+          const result = response.data[0];
+          const lat = parseFloat(result.lat);
+          const lng = parseFloat(result.lon);
+
+          // Actualizar mapa
+          this.center = [lat, lng];
+          this.markerPosition = [lat, lng];
+
+          // Actualizar formulario
+          this.formData.latitude = lat;
+          this.formData.longitude = lng;
+
+          // Procesar el resultado
+          this.processNominatimResult(result);
+        }
+      } catch (error) {
+        console.error("Error in geocoding:", error);
+      }
+    },
+
+    // Modificar processNominatimResult para almacenar el address temporalmente
+    processNominatimResult(result) {
+      // Guardar la dirección completa
+      this.formData.address = result.display_name || "";
+
+      // Extraer componentes de la dirección
+      const address = result.address || {};
+      console.log("Componentes de dirección:", address);
+
+      // Guardar temporalmente para usar en otros métodos
+      this.currentAddress = address;
+
+      // País
+      if (address.country_code) {
+        const countryCode = address.country_code.toUpperCase();
+        const foundCountry = this.countries.find((c) => c.code === countryCode);
+        if (foundCountry) {
+          this.formData.country = foundCountry;
+
+          // Si el país es España, manejar provincia y ciudad
+          if (countryCode === "ES") {
+            // Determinar el nombre de la provincia
+            const provinceName =
+              address.state ||
+              address.province ||
+              address.county ||
+              this.getProvinceFromPostalCode(address.postcode);
+
+            if (provinceName) {
+              console.log("Nombre de provincia detectado:", provinceName);
+              // Guardar temporalmente si las provincias aún no están cargadas
+              if (this.provinces.length === 0) {
+                this.tempProvinceName = provinceName;
+                this.loadProvinces();
+              } else {
+                this.findAndSetProvince(provinceName);
+              }
+            }
+          }
+        }
+      }
+
+      // Código postal
+      if (address.postcode) {
+        this.formData.postalCode = address.postcode;
+      }
+
+      // Ciudad/Población
+      const cityName =
+        address.city || address.town || address.village || address.hamlet;
+
+      if (cityName) {
+        console.log("Nombre de ciudad detectado:", cityName);
+        this.tempCityName = cityName;
+
+        // Si ya tenemos provincia y ciudades cargadas
+        if (this.formData.province && this.cities.length > 0) {
+          this.findAndSetCity(cityName);
+        }
+      }
+
+      // Dirección más detallada
+      let detailedAddress = "";
+
+      if (address.road) {
+        detailedAddress += address.road;
+
+        if (address.house_number) {
+          detailedAddress += `, ${address.house_number}`;
+        }
+      }
+
+      if (detailedAddress) {
+        this.formData.address = detailedAddress;
+      }
+
+      // Sugerir un nombre para la dirección si está vacío
+      if (!this.formData.name) {
+        if (cityName) {
+          this.formData.name = `Dirección en ${cityName}`;
+        } else {
+          this.formData.name = `Nueva dirección`;
+        }
+      }
+    },
+
+    // Corregir el método findAndSetProvince para pasar la dirección
+    findAndSetProvince(provinceName) {
+      if (!provinceName || !this.provinces.length) return;
+
+      console.log("Buscando provincia:", provinceName);
+      console.log(
+        "Provincias disponibles:",
+        this.provinces.map((p) => p.name)
+      );
+
+      // Normalizar nombres para comparación
+      const normalizedSearch = this.normalizeText(provinceName);
+
+      // Primero intentar una coincidencia exacta
+      let foundProvince = this.provinces.find(
+        (p) => this.normalizeText(p.name) === normalizedSearch
+      );
+
+      // Si no hay coincidencia exacta, buscar coincidencia parcial
+      if (!foundProvince) {
+        foundProvince = this.provinces.find(
+          (p) =>
+            this.normalizeText(p.name).includes(normalizedSearch) ||
+            normalizedSearch.includes(this.normalizeText(p.name))
+        );
+      }
+
+      // Si aún no hay coincidencia, buscar por código postal
+      if (!foundProvince && this.formData.postalCode) {
+        const postalPrefix = this.formData.postalCode.substring(0, 2);
+        // Mapeo de prefijos de código postal a códigos de provincia
+        const postalToProvince = {
+          "01": "VI",
+          "02": "AB",
+          "03": "A",
+          "04": "AL",
+          "05": "AV",
+          "06": "BA",
+          "07": "IB",
+          "08": "B",
+          "09": "BU",
+          10: "CC",
+          11: "CA",
+          12: "CS",
+          13: "CR",
+          14: "CO",
+          15: "C",
+          16: "CU",
+          17: "GI",
+          18: "GR",
+          19: "GU",
+          20: "SS",
+          21: "H",
+          22: "HU",
+          23: "J",
+          24: "LE",
+          25: "L",
+          26: "LO",
+          27: "LU",
+          28: "M",
+          29: "MA",
+          30: "MU",
+          31: "NA",
+          32: "OR",
+          33: "O",
+          34: "P",
+          35: "GC",
+          36: "PO",
+          37: "SA",
+          38: "TF",
+          39: "S",
+          40: "SG",
+          41: "SE",
+          42: "SO",
+          43: "T",
+          44: "TE",
+          45: "TO",
+          46: "V",
+          47: "VA",
+          48: "BI",
+          49: "ZA",
+          50: "Z",
+          51: "CE",
+          52: "ML",
+        };
+
+        const provinceCode = postalToProvince[postalPrefix];
+        if (provinceCode) {
+          foundProvince = this.provinces.find((p) => p.code === provinceCode);
+        }
+      }
+
+      if (foundProvince) {
+        console.log("Provincia encontrada:", foundProvince.name);
+        this.formData.province = foundProvince;
+
+        // Cargar ciudades de esta provincia
+        this.loadCities(foundProvince.code).then(() => {
+          // Ciudad/Población - CORREGIR AQUÍ
+          // Obtener el nombre de la ciudad del contexto actual, no de result.address
+          const address = this.formData.address || "";
+          const cityName = address.split(",")[0]; // Intento simplificado de extraer la ciudad
+
+          if (cityName) {
+            console.log("Nombre de ciudad detectado:", cityName);
+            this.findAndSetCity(cityName);
+          }
+        });
+      } else {
+        console.log(
+          "No se encontró coincidencia para la provincia:",
+          provinceName
+        );
+      }
+    },
+
+    // Método para buscar y establecer la ciudad con mejor coincidencia
+    findAndSetCity(cityName) {
+      if (!cityName || !this.cities.length) return;
+
+      console.log("Buscando ciudad:", cityName);
+      console.log(
+        "Ciudades disponibles:",
+        this.cities.map((c) => c.name)
+      );
+
+      // Normalizar nombres para comparación
+      const normalizedSearch = this.normalizeText(cityName);
+
+      // Primero intentar una coincidencia exacta
+      let foundCity = this.cities.find(
+        (c) => this.normalizeText(c.name) === normalizedSearch
+      );
+
+      // Si no hay coincidencia exacta, buscar coincidencia parcial
+      if (!foundCity) {
+        foundCity = this.cities.find(
+          (c) =>
+            this.normalizeText(c.name).includes(normalizedSearch) ||
+            normalizedSearch.includes(this.normalizeText(c.name))
+        );
+      }
+
+      // Si aún no hay coincidencia, buscar por código postal
+      if (!foundCity && this.formData.postalCode) {
+        foundCity = this.cities.find(
+          (c) => c.postalCode === this.formData.postalCode
+        );
+      }
+
+      if (foundCity) {
+        console.log("Ciudad encontrada:", foundCity.name);
+        this.formData.city = foundCity;
+
+        // Si la ciudad tiene código postal y no tenemos uno, usarlo
+        if (foundCity.postalCode && !this.formData.postalCode) {
+          this.formData.postalCode = foundCity.postalCode;
+        }
+      } else {
+        console.log("No se encontró coincidencia para la ciudad:", cityName);
+      }
+    },
+
+    // Obtener provincia a partir del código postal
+    getProvinceFromPostalCode(postalCode) {
+      if (!postalCode || postalCode.length < 2) return null;
+
+      const postalPrefix = postalCode.substring(0, 2);
+      // Mapeo de prefijos de código postal a nombres de provincia
+      const postalToProvinceName = {
+        "01": "Álava",
+        "02": "Albacete",
+        "03": "Alicante",
+        "04": "Almería",
+        "05": "Ávila",
+        "06": "Badajoz",
+        "07": "Baleares",
+        "08": "Barcelona",
+        "09": "Burgos",
+        10: "Cáceres",
+        11: "Cádiz",
+        12: "Castellón",
+        13: "Ciudad Real",
+        14: "Córdoba",
+        15: "La Coruña",
+        16: "Cuenca",
+        17: "Gerona",
+        18: "Granada",
+        19: "Guadalajara",
+        20: "Guipúzcoa",
+        21: "Huelva",
+        22: "Huesca",
+        23: "Jaén",
+        24: "León",
+        25: "Lérida",
+        26: "La Rioja",
+        27: "Lugo",
+        28: "Madrid",
+        29: "Málaga",
+        30: "Murcia",
+        31: "Navarra",
+        32: "Orense",
+        33: "Asturias",
+        34: "Palencia",
+        35: "Las Palmas",
+        36: "Pontevedra",
+        37: "Salamanca",
+        38: "Santa Cruz de Tenerife",
+        39: "Cantabria",
+        40: "Segovia",
+        41: "Sevilla",
+        42: "Soria",
+        43: "Tarragona",
+        44: "Teruel",
+        45: "Toledo",
+        46: "Valencia",
+        47: "Valladolid",
+        48: "Vizcaya",
+        49: "Zamora",
+        50: "Zaragoza",
+        51: "Ceuta",
+        52: "Melilla",
+      };
+
+      return postalToProvinceName[postalPrefix] || null;
+    },
+
+    // Método para normalizar texto para comparaciones
+    normalizeText(text) {
+      if (!text) return "";
+
+      return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+        .replace(/[^\w\s]/gi, "") // Eliminar caracteres especiales
+        .trim();
+    },
+
+    // Usar la ubicación actual
+    useCurrentLocation() {
+      if (!navigator.geolocation) {
+        alert("La geolocalización no está disponible en tu navegador");
+        return;
+      }
+
+      this.loadingLocation = true;
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          // Asegurarse de que el mapa esté inicializado
+          if (!this.showMap) {
+            this.showMap = true;
+            this.$nextTick(() => {
+              // Actualizar mapa
+              this.center = [lat, lng];
+              this.zoom = 15;
+              this.markerPosition = [lat, lng];
+
+              // Actualizar formulario
+              this.updateFormFromCoordinates(lat, lng);
+            });
+          } else {
+            // Actualizar mapa
+            this.center = [lat, lng];
+            this.zoom = 15;
+            this.markerPosition = [lat, lng];
+
+            // Actualizar formulario
+            this.updateFormFromCoordinates(lat, lng);
+          }
+
+          this.loadingLocation = false;
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("No se pudo obtener tu ubicación");
+          this.loadingLocation = false;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
+    },
+
+    initForm() {
+      if (this.address) {
+        // Si estamos editando, llenar el formulario con los datos existentes
+        this.formData = { ...this.address };
+
+        // Si el país es España, cargar provincias y ciudades
+        if (this.isSpain) {
+          this.loadProvinces().then(() => {
+            if (this.formData.province) {
+              this.loadCities(this.formData.province.code);
+            }
+          });
+        }
+
+        // Si tenemos coordenadas, mostrar el mapa automáticamente
+        if (this.formData.latitude && this.formData.longitude) {
+          this.showMap = true;
+          this.$nextTick(() => {
+            this.center = [this.formData.latitude, this.formData.longitude];
+            this.markerPosition = [
+              this.formData.latitude,
+              this.formData.longitude,
+            ];
+          });
+        }
+      } else {
+        // Inicializar con valores por defecto para un nuevo registro
+        this.formData = {
+          name: "",
+          country: null,
+          province: null,
+          city: null,
+          postalCode: "",
+          address: "",
+          comment: "",
+          isPrimary: false,
+          latitude: null,
+          longitude: null,
+        };
+      }
+    },
+
+    saveAddress() {
+      if (!this.$refs.form.validate()) return;
+
+      this.isSaving = true;
+
+      // Preparar los datos para enviar
+      const addressData = {
+        ...this.formData,
+        // Asegurarse de que los objetos complejos se envíen correctamente
+        country: this.formData.country ? this.formData.country.name : null,
+        province: this.formData.province ? this.formData.province.name : null,
+        city: this.formData.city ? this.formData.city.name : null,
+      };
+
+      // Si estamos editando, incluir el ID
+      if (this.isEditing && this.address) {
+        addressData.id = this.address.id;
+      }
+
+      // Emitir evento para guardar
+      this.$emit("save", addressData);
+      this.isSaving = false;
+    },
+
+    cancel() {
+      this.$emit("cancel");
+    },
+  },
+  async created() {
+    await this.loadCountries();
+    this.initForm();
+  },
+  mounted() {
+    // Configurar console.log para mostrar más información sobre los objetos
+    const originalLog = console.log;
+    console.log = function (...args) {
+      args.forEach((arg) => {
+        if (typeof arg === "object" && arg !== null) {
+          try {
+            arg = JSON.parse(JSON.stringify(arg));
+          } catch (e) {}
+        }
+      });
+      originalLog.apply(console, args);
+    };
+  },
+  watch: {
+    address: {
+      handler(newVal) {
+        if (newVal) {
+          this.initForm();
+        }
+      },
+      deep: true,
+    },
+  },
+};
+</script>
+
+<style scoped>
+.map-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map-placeholder {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.map-placeholder:hover {
+  background-color: #e0e0e0;
+}
+
+.map-search {
+  position: absolute;
+  top: 10px;
+  left: 50px;
+  right: 10px;
+  z-index: 1000;
+}
+
+.map-instructions {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+.map-location-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+.flag-icon {
+  width: 24px;
+  height: 18px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 2px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.flag-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 600px) {
+  .map-container {
+    height: 200px; /* Altura reducida en móviles */
+  }
+
+  .map-instructions {
+    display: none; /* Ocultar instrucciones en móviles para ahorrar espacio */
+  }
+
+  .map-search {
+    left: 10px;
+    right: 10px;
+    top: 50px;
+  }
+}
+</style>

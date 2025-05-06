@@ -63,45 +63,38 @@
 
             <v-list dense>
               <v-list-item>
-                <v-list-item-icon>
+                <template v-slot:prepend>
                   <v-icon>mdi-email</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>{{ user.email }}</v-list-item-title>
-                  <v-list-item-subtitle>Email</v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-
-              <v-list-item v-if="user.phone">
-                <v-list-item-icon>
-                  <v-icon>mdi-phone</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>{{ user.phone }}</v-list-item-title>
-                  <v-list-item-subtitle>Teléfono</v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-
-              <v-list-item v-if="user.location">
-                <v-list-item-icon>
-                  <v-icon>mdi-map-marker</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>{{ user.location }}</v-list-item-title>
-                  <v-list-item-subtitle>Ubicación</v-list-item-subtitle>
-                </v-list-item-content>
+                </template>
+                <v-list-item-subtitle>Email</v-list-item-subtitle>
+                <v-list-item-title>{{ user.email }}</v-list-item-title>
               </v-list-item>
 
               <v-list-item>
-                <v-list-item-icon>
+                <template v-slot:prepend>
+                  <v-icon>mdi-phone</v-icon>
+                </template>
+                <v-list-item-subtitle>Teléfono</v-list-item-subtitle>
+                <v-list-item-title>{{ user.phone }}</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item
+                @click="addressesDialog = true"
+                style="cursor: pointer"
+              >
+                <template v-slot:prepend>
+                  <v-icon>mdi-map-marker</v-icon>
+                </template>
+                <v-list-item-subtitle>Ubicación</v-list-item-subtitle>
+                <v-list-item-title>{{ user.location }}</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item>
+                <template v-slot:prepend>
                   <v-icon>mdi-calendar</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>{{
-                    formatDate(user.createdAt)
-                  }}</v-list-item-title>
-                  <v-list-item-subtitle>Miembro desde</v-list-item-subtitle>
-                </v-list-item-content>
+                </template>
+                <v-list-item-subtitle>Miembro desde</v-list-item-subtitle>
+                <v-list-item-title>{{ user.createdAt }}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card>
@@ -110,56 +103,39 @@
           <v-card>
             <v-list>
               <v-list-item @click="changePasswordDialog = true">
-                <v-list-item-icon>
+                <template v-slot:prepend>
                   <v-icon>mdi-lock</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>Cambiar contraseña</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-icon>mdi-chevron-right</v-icon>
-                </v-list-item-action>
+                </template>
+                <v-list-item-title>Cambiar contraseña</v-list-item-title>
               </v-list-item>
 
               <v-list-item
                 v-if="user.role === 'employer'"
                 :to="`/company/${user.companyId}`"
               >
-                <v-list-item-icon>
+                <template v-slot:prepend>
                   <v-icon>mdi-domain</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>Mi empresa</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-icon>mdi-chevron-right</v-icon>
-                </v-list-item-action>
+                </template>
+                <v-list-item-title>Mi empresa</v-list-item-title>
               </v-list-item>
 
               <v-list-item
                 v-if="user.role === 'candidate'"
                 :to="`/resume/${user.resumeId}`"
               >
-                <v-list-item-icon>
+                <template v-slot:prepend>
                   <v-icon>mdi-file-document</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>Mi currículum</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-icon>mdi-chevron-right</v-icon>
-                </v-list-item-action>
+                </template>
+                <v-list-item-title>Mi currículum</v-list-item-title>
               </v-list-item>
 
               <v-list-item @click="deleteAccountDialog = true">
-                <v-list-item-icon>
+                <template v-slot:prepend>
                   <v-icon color="error">mdi-delete</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title class="error--text"
-                    >Eliminar cuenta</v-list-item-title
-                  >
-                </v-list-item-content>
+                </template>
+                <v-list-item-title class="error--text"
+                  >Eliminar cuenta</v-list-item-title
+                >
               </v-list-item>
             </v-list>
           </v-card>
@@ -170,13 +146,14 @@
           <v-card>
             <v-tabs v-model="activeTab">
               <v-tab>Información Personal</v-tab>
+              <v-tab>Direcciones</v-tab>
               <v-tab>Preferencias</v-tab>
               <v-tab>Notificaciones</v-tab>
             </v-tabs>
 
-            <v-tabs-items v-model="activeTab">
+            <v-window v-model="activeTab">
               <!-- Pestaña de información personal -->
-              <v-tab-item>
+              <v-window-item>
                 <v-card flat>
                   <v-card-text>
                     <v-form ref="personalForm" v-model="personalFormValid">
@@ -277,10 +254,25 @@
                     </v-form>
                   </v-card-text>
                 </v-card>
-              </v-tab-item>
+              </v-window-item>
+
+              <!-- Contenido de Direcciones -->
+              <v-window-item>
+                <v-card flat>
+                  <v-card-text>
+                    <!-- Cambiar AddressView por AddressForm -->
+                    <address-form
+                      :address="null"
+                      :is-editing="false"
+                      @save="saveAddress"
+                      @cancel="cancelAddressForm"
+                    />
+                  </v-card-text>
+                </v-card>
+              </v-window-item>
 
               <!-- Pestaña de preferencias -->
-              <v-tab-item>
+              <v-window-item>
                 <v-card flat>
                   <v-card-text>
                     <v-form
@@ -338,15 +330,14 @@
                       </v-row>
 
                       <v-row v-if="user.role === 'candidate'">
-                        <v-col cols="12">
-                          <v-slider
+                        <v-col cols="12"
+                          ><v-range-slider
                             v-model="profileData.jobPreferences.salaryRange"
                             label="Rango salarial (€)"
                             min="15000"
                             max="100000"
                             step="1000"
                             thumb-label="always"
-                            range
                           >
                             <template v-slot:prepend>
                               {{ profileData.jobPreferences.salaryRange[0] }}€
@@ -354,7 +345,7 @@
                             <template v-slot:append>
                               {{ profileData.jobPreferences.salaryRange[1] }}€
                             </template>
-                          </v-slider>
+                          </v-range-slider>
                         </v-col>
                       </v-row>
 
@@ -386,10 +377,10 @@
                     </v-form>
                   </v-card-text>
                 </v-card>
-              </v-tab-item>
+              </v-window-item>
 
               <!-- Pestaña de notificaciones -->
-              <v-tab-item>
+              <v-window-item>
                 <v-card flat>
                   <v-card-text>
                     <v-form
@@ -397,115 +388,103 @@
                       v-model="notificationsFormValid"
                     >
                       <v-list two-line>
-                        <v-subheader>Notificaciones por email</v-subheader>
+                        <v-list-subheader
+                          >Notificaciones por email</v-list-subheader
+                        >
 
                         <v-list-item>
-                          <v-list-item-action>
+                          <template v-slot:prepend>
                             <v-switch
                               v-model="
                                 profileData.notifications.emailNewsletter
                               "
                             ></v-switch>
-                          </v-list-item-action>
-                          <v-list-item-content>
-                            <v-list-item-title>Newsletter</v-list-item-title>
-                            <v-list-item-subtitle
-                              >Recibir newsletter semanal</v-list-item-subtitle
-                            >
-                          </v-list-item-content>
+                          </template>
+                          <v-list-item-title>Newsletter</v-list-item-title>
+                          <v-list-item-subtitle
+                            >Recibir newsletter semanal</v-list-item-subtitle
+                          >
                         </v-list-item>
 
                         <v-list-item>
-                          <v-list-item-action>
+                          <template v-slot:prepend>
                             <v-switch
                               v-model="profileData.notifications.emailJobAlerts"
                             ></v-switch>
-                          </v-list-item-action>
-                          <v-list-item-content>
-                            <v-list-item-title
-                              >Alertas de empleo</v-list-item-title
-                            >
-                            <v-list-item-subtitle
-                              >Recibir alertas de nuevos empleos que coincidan
-                              con tus preferencias</v-list-item-subtitle
-                            >
-                          </v-list-item-content>
+                          </template>
+                          <v-list-item-title
+                            >Alertas de empleo</v-list-item-title
+                          >
+                          <v-list-item-subtitle
+                            >Recibir alertas de nuevos empleos que coincidan con
+                            tus preferencias</v-list-item-subtitle
+                          >
                         </v-list-item>
 
                         <v-list-item>
-                          <v-list-item-action>
+                          <template v-slot:prepend>
                             <v-switch
                               v-model="profileData.notifications.emailMessages"
                             ></v-switch>
-                          </v-list-item-action>
-                          <v-list-item-content>
-                            <v-list-item-title>Mensajes</v-list-item-title>
-                            <v-list-item-subtitle
-                              >Recibir notificaciones por email cuando recibas
-                              un mensaje</v-list-item-subtitle
-                            >
-                          </v-list-item-content>
+                          </template>
+                          <v-list-item-title>Mensajes</v-list-item-title>
+                          <v-list-item-subtitle
+                            >Recibir notificaciones por email cuando recibas un
+                            mensaje</v-list-item-subtitle
+                          >
                         </v-list-item>
 
                         <v-divider></v-divider>
-                        <v-subheader
-                          >Notificaciones en la plataforma</v-subheader
+                        <v-list-subheader
+                          >Notificaciones en la plataforma</v-list-subheader
                         >
 
                         <v-list-item>
-                          <v-list-item-action>
+                          <template v-slot:prepend>
                             <v-switch
                               v-model="profileData.notifications.appJobAlerts"
                             ></v-switch>
-                          </v-list-item-action>
-                          <v-list-item-content>
-                            <v-list-item-title
-                              >Alertas de empleo</v-list-item-title
-                            >
-                            <v-list-item-subtitle
-                              >Recibir notificaciones de nuevos
-                              empleos</v-list-item-subtitle
-                            >
-                          </v-list-item-content>
+                          </template>
+                          <v-list-item-title
+                            >Alertas de empleo</v-list-item-title
+                          >
+                          <v-list-item-subtitle
+                            >Recibir notificaciones de nuevos
+                            empleos</v-list-item-subtitle
+                          >
                         </v-list-item>
 
                         <v-list-item>
-                          <v-list-item-action>
+                          <template v-slot:prepend>
                             <v-switch
                               v-model="profileData.notifications.appMessages"
                             ></v-switch>
-                          </v-list-item-action>
-                          <v-list-item-content>
-                            <v-list-item-title>Mensajes</v-list-item-title>
-                            <v-list-item-subtitle
-                              >Recibir notificaciones de nuevos
-                              mensajes</v-list-item-subtitle
-                            >
-                          </v-list-item-content>
+                          </template>
+                          <v-list-item-title>Mensajes</v-list-item-title>
+                          <v-list-item-subtitle
+                            >Recibir notificaciones de nuevos
+                            mensajes</v-list-item-subtitle
+                          >
                         </v-list-item>
 
                         <v-list-item>
-                          <v-list-item-action>
+                          <template v-slot:prepend>
                             <v-switch
                               v-model="profileData.notifications.appUpdates"
                             ></v-switch>
-                          </v-list-item-action>
-                          <v-list-item-content>
-                            <v-list-item-title
-                              >Actualizaciones</v-list-item-title
-                            >
-                            <v-list-item-subtitle
-                              >Recibir notificaciones sobre actualizaciones de
-                              la plataforma</v-list-item-subtitle
-                            >
-                          </v-list-item-content>
+                          </template>
+                          <v-list-item-title>Actualizaciones</v-list-item-title>
+                          <v-list-item-subtitle
+                            >Recibir notificaciones sobre actualizaciones de la
+                            plataforma</v-list-item-subtitle
+                          >
                         </v-list-item>
                       </v-list>
                     </v-form>
                   </v-card-text>
                 </v-card>
-              </v-tab-item>
-            </v-tabs-items>
+              </v-window-item>
+            </v-window>
 
             <v-divider></v-divider>
 
@@ -658,20 +637,39 @@
     <!-- Snackbar para mensajes -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.text }}
-      <template v-slot:action="{ attrs }">
-        <v-btn text v-bind="attrs" @click="snackbar.show = false">
-          Cerrar
-        </v-btn>
+      <template v-slot:actions>
+        <v-btn text @click="snackbar.show = false"> Cerrar </v-btn>
       </template>
     </v-snackbar>
+
+    <!-- Modal para mostrar direcciones -->
+    <v-dialog v-model="addressesDialog" max-width="800">
+      <v-card>
+        <v-card-title>Mis Direcciones</v-card-title>
+        <v-card-text>
+          <address-component
+            @address-selected="updateProfileLocation"
+            @close="addressesDialog = false"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
+//import AddressView from "@/views/AddressView.vue";
+import AddressForm from "@/components/localization/AddressForm.vue";
+import AddressComponent from "@/components/localization/AddressComponent.vue";
 export default {
   name: "ProfileView",
+  components: {
+    AddressForm,
+    AddressComponent,
+  },
   data() {
     return {
+      addressesDialog: false,
       loading: true,
       saving: false,
       changingPassword: false,
@@ -748,36 +746,36 @@ export default {
       },
       // Opciones para selects
       languages: [
-        { text: "Español", value: "es" },
-        { text: "English", value: "en" },
-        { text: "Français", value: "fr" },
-        { text: "Deutsch", value: "de" },
+        { title: "Español", value: "es" },
+        { title: "English", value: "en" },
+        { title: "Français", value: "fr" },
+        { title: "Deutsch", value: "de" },
       ],
       themes: [
-        { text: "Claro", value: "light" },
-        { text: "Oscuro", value: "dark" },
-        { text: "Sistema", value: "system" },
+        { title: "Claro", value: "light" },
+        { title: "Oscuro", value: "dark" },
+        { title: "Sistema", value: "system" },
       ],
       jobTypes: [
-        { text: "Tiempo completo", value: "full-time" },
-        { text: "Medio tiempo", value: "part-time" },
-        { text: "Freelance", value: "freelance" },
-        { text: "Contrato", value: "contract" },
-        { text: "Prácticas", value: "internship" },
+        { title: "Tiempo completo", value: "full-time" },
+        { title: "Medio tiempo", value: "part-time" },
+        { title: "Freelance", value: "freelance" },
+        { title: "Contrato", value: "contract" },
+        { title: "Prácticas", value: "internship" },
       ],
       locationOptions: [
-        { text: "Madrid", value: "madrid" },
-        { text: "Barcelona", value: "barcelona" },
-        { text: "Valencia", value: "valencia" },
-        { text: "Sevilla", value: "sevilla" },
-        { text: "Remoto", value: "remote" },
+        { title: "Madrid", value: "madrid" },
+        { title: "Barcelona", value: "barcelona" },
+        { title: "Valencia", value: "valencia" },
+        { title: "Sevilla", value: "sevilla" },
+        { title: "Remoto", value: "remote" },
       ],
       categoryOptions: [
-        { text: "Tecnología", value: "technology" },
-        { text: "Marketing", value: "marketing" },
-        { text: "Diseño", value: "design" },
-        { text: "Ventas", value: "sales" },
-        { text: "Educación", value: "education" },
+        { title: "Tecnología", value: "technology" },
+        { title: "Marketing", value: "marketing" },
+        { title: "Diseño", value: "design" },
+        { title: "Ventas", value: "sales" },
+        { title: "Educación", value: "education" },
       ],
       skillSuggestions: [
         "JavaScript",
@@ -944,6 +942,62 @@ export default {
       } finally {
         this.saving = false;
       }
+    },
+
+    // Agregar estos métodos para manejar la dirección
+    saveAddress(addressData) {
+      // Aquí implementarías la lógica para guardar la dirección
+      console.log("Dirección guardada:", addressData);
+
+      // Ejemplo de implementación:
+      // await axios.post('/api/addresses', addressData);
+
+      this.showSnackbar("Dirección guardada correctamente", "success");
+    },
+
+    // Añadir este método para actualizar la ubicación del perfil
+    updateProfileLocation(address) {
+      if (address) {
+        // Formatea la dirección para mostrarla en el perfil
+        let location = "";
+
+        if (address.city) {
+          location += address.city;
+        }
+
+        if (address.province) {
+          if (location) location += ", ";
+          location += address.province;
+        }
+
+        if (address.country) {
+          if (location) location += ", ";
+          location += address.country;
+        }
+
+        // Actualiza la ubicación del usuario y los datos del formulario
+        this.user.location = location;
+        this.profileData.location = location;
+
+        // Opcional: guardar la dirección completa en un campo separado
+        this.user.fullAddress = address;
+
+        // Aquí deberías guardar los cambios en el servidor
+        // Por ejemplo:
+        // await axios.put('/api/auth/profile', { location: location });
+
+        this.showSnackbar("Dirección principal actualizada", "success");
+      }
+
+      // Cerrar el modal
+      this.addressesDialog = false;
+    },
+
+    cancelAddressForm() {
+      // Acciones a realizar cuando se cancela el formulario
+      console.log("Formulario de dirección cancelado");
+      // Puedes redirigir a otra pestaña si lo deseas
+      // this.activeTab = 0;
     },
 
     resetForm() {

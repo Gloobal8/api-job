@@ -1,0 +1,244 @@
+/* assets/styles/global.css */
+:root {
+  /* Variables CSS globales */
+  --primary-color: #1976d2;
+  --secondary-color: #424242;
+  --accent-color: #82b1ff;
+  --error-color: #ff5252;
+  --text-color: #333333;
+  --light-text: #ffffff;
+  --border-radius: 4px;
+
+  /* Tamaños de fuente */
+  --fs-x-sm: 0.875rem;
+  --fs-sm: 1rem;
+  --fs-md: 1.1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-xxl: 1.75rem;
+
+  /* Espaciado */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+/* Estilos globales */
+body {
+  font-family: system-ui;
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* Utilidades comunes */
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-left {
+  text-align: left;
+}
+
+.font-weight-bold {
+  font-weight: 700;
+}
+.font-weight-medium {
+  font-weight: 500;
+}
+.font-weight-regular {
+  font-weight: 400;
+}
+
+/* Espaciado */
+.ma-0 {
+  margin: 0 !important;
+}
+.pa-0 {
+  padding: 0 !important;
+}
+.my-auto {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Flexbox */
+.d-flex {
+  display: flex !important;
+}
+.flex-column {
+  flex-direction: column !important;
+}
+.align-center {
+  align-items: center !important;
+}
+.justify-center {
+  justify-content: center !important;
+}
+.justify-space-between {
+  justify-content: space-between !important;
+}
+
+/* Colores */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+.text-secondary {
+  color: var(--secondary-color) !important;
+}
+.text-error {
+  color: var(--error-color) !important;
+}
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+.bg-secondary {
+  background-color: var(--secondary-color) !important;
+}
+
+/* Sombras */
+.elevation-1 {
+  box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
+    0 1px 3px 0 rgba(0, 0, 0, 0.12) !important;
+}
+.elevation-2 {
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 1px 5px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Bordes */
+.rounded {
+  border-radius: var(--border-radius) !important;
+}
+.border {
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Texto */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-caption {
+  font-size: var(--font-size-small);
+  font-weight: 400;
+}
+
+.text-body {
+  font-size: var(--font-size-base);
+}
+
+.text-subtitle {
+  font-size: var(--font-size-large);
+  font-weight: 500;
+}
+
+.text-title {
+  font-size: var(--font-size-xlarge);
+  font-weight: 500;
+}
+
+.text-h6 {
+  font-weight: 600;
+}
+
+p {
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+ul.ul {
+  margin-left: 1.1rem;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+ul.ul > li {
+  margin-bottom: 15px;
+}
+
+.v-list-item-subtitle {
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  overflow-wrap: normal;
+  overflow: hidden;
+  padding: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  word-break: normal;
+  word-wrap: break-word;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: 0.009375em;
+  line-height: 1.5rem;
+  text-transform: none;
+  color: var(--text-color);
+  opacity: inherit;
+}
+
+.v-list-item-title {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  opacity: var(--v-medium-emphasis-opacity);
+  overflow: hidden;
+  padding: 0;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  font-size: var(--fs-x-sm);
+  font-weight: 400;
+  letter-spacing: 0.0178571429em;
+  line-height: 1rem;
+  text-transform: none;
+}
+
+/* Estilos para listas colapsables usando clases */
+.collapsible-list-wrapper {
+  position: relative;
+}
+
+.collapsible-list-wrapper :deep(ul) {
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+
+.collapsible-list-wrapper.collapsed :deep(ul) {
+  max-height: v-bind('props.collapsedHeight + "px"');
+}
+
+.collapsible-fade-overlay {
+  position: absolute;
+  bottom: 50px !important;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 1)
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.toggle-list-btn {
+  margin-top: -20px;
+  z-index: 2;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+}

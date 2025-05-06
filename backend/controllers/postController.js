@@ -1,31 +1,64 @@
-const Post = require('../models/Post');
-const Category = require('../models/Category');
+const fs = require("fs");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const db = require("../config/db");
+const Post = require("../models/Post");
+const Category = require("../models/Category");
+
+// Helper to read/write to JSON file
+const DB_PATH = path.join(__dirname, "../data/db.json");
+
+const readDB = () => {
+  try {
+    const data = fs.readFileSync(DB_PATH, "utf8");
+    return JSON.parse(data);
+  } catch (error) {
+    console.error("Error reading database:", error);
+    return {
+      jobs: [],
+      companies: [],
+      users: [],
+      categories: [],
+      applications: [],
+    };
+  }
+};
+
+const writeDB = (data) => {
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf8");
+    return true;
+  } catch (error) {
+    console.error("Error writing to database:", error);
+    return false;
+  }
+};
 
 // Get all posts with pagination and filtering
 exports.getAllPosts = async (req, res) => {
   try {
     // Extract query parameters
-    const { 
-      status = 'published', 
-      categoryId, 
-      authorId, 
-      tag, 
+    const {
+      status = "published",
+      categoryId,
+      authorId,
+      tag,
       search,
       page = 1,
       limit = 10,
-      sort = 'newest'
+      sort = "newest",
     } = req.query;
 
     // Build filters
     const filters = {};
-    
+
     // Only admin can see unpublished posts
-    if (req.user && req.user.role === 'admin') {
+    if (req.user && req.user.role === "admin") {
       if (status) filters.status = status;
     } else {
-      filters.status = 'published';
+      filters.status = "published";
     }
-    
+
     if (categoryId) filters.categoryId = categoryId;
     if (authorId) filters.authorId = authorId;
     if (tag) filters.tag = tag;
@@ -35,11 +68,11 @@ exports.getAllPosts = async (req, res) => {
     let posts = Post.findAll(filters);
 
     // Sort posts
-    if (sort === 'newest') {
+    if (sort === "newest") {
       posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (sort === 'oldest') {
+    } else if (sort === "oldest") {
       posts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    } else if (sort === 'popular') {
+    } else if (sort === "popular") {
       posts.sort((a, b) => b.viewCount - a.viewCount);
     }
 
@@ -47,12 +80,12 @@ exports.getAllPosts = async (req, res) => {
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const total = posts.length;
-    
+
     // Paginate results
     posts = posts.slice(startIndex, endIndex);
 
     // Add category information to each post
-    posts = posts.map(post => {
+    posts = posts.map((post) => {
       let category = null;
       if (post.categoryId) {
         category = Category.findById(post.categoryId);
@@ -60,7 +93,7 @@ exports.getAllPosts = async (req, res) => {
           category = {
             id: category.id,
             name: category.name,
-            slug: category.slug
+            slug: category.slug,
           };
         }
       }
@@ -73,13 +106,13 @@ exports.getAllPosts = async (req, res) => {
       total,
       totalPages: Math.ceil(total / limit),
       currentPage: parseInt(page),
-      posts
+      posts,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving posts',
-      error: error.message
+      message: "Error retrieving posts",
+      error: error.message,
     });
   }
 };
@@ -87,25 +120,31 @@ exports.getAllPosts = async (req, res) => {
 // Get a single post by ID
 exports.getPostById = async (req, res) => {
   try {
-    const post = Post.findById(req.params.id);
-    
+    const post = db.get("posts").find({ id: req.params.id }).value();
+
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: 'Post not found'
+        message: "Post not found",
       });
     }
 
     // Only admin can see unpublished posts
-    if (post.status !== 'published' && (!req.user || req.user.role !== 'admin')) {
+    if (
+      post.status !== "published" &&
+      (!req.user || req.user.role !== "admin")
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Increment view count if it's a public view
-    if (post.status === 'published' && (!req.user || req.user.id !== post.authorId)) {
+    if (
+      post.status === "published" &&
+      (!req.user || req.user.id !== post.authorId)
+    ) {
       Post.incrementViewCount(post.id);
     }
 
@@ -117,20 +156,20 @@ exports.getPostById = async (req, res) => {
         category = {
           id: category.id,
           name: category.name,
-          slug: category.slug
+          slug: category.slug,
         };
       }
     }
 
     res.status(200).json({
       success: true,
-      post: { ...post, category }
+      post: { ...post, category },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving post',
-      error: error.message
+      message: "Error retrieving post",
+      error: error.message,
     });
   }
 };
@@ -139,24 +178,30 @@ exports.getPostById = async (req, res) => {
 exports.getPostBySlug = async (req, res) => {
   try {
     const post = Post.findBySlug(req.params.slug);
-    
+
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: 'Post not found'
+        message: "Post not found",
       });
     }
 
     // Only admin can see unpublished posts
-    if (post.status !== 'published' && (!req.user || req.user.role !== 'admin')) {
+    if (
+      post.status !== "published" &&
+      (!req.user || req.user.role !== "admin")
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Increment view count if it's a public view
-    if (post.status === 'published' && (!req.user || req.user.id !== post.authorId)) {
+    if (
+      post.status === "published" &&
+      (!req.user || req.user.id !== post.authorId)
+    ) {
       Post.incrementViewCount(post.id);
     }
 
@@ -168,20 +213,20 @@ exports.getPostBySlug = async (req, res) => {
         category = {
           id: category.id,
           name: category.name,
-          slug: category.slug
+          slug: category.slug,
         };
       }
     }
 
     res.status(200).json({
       success: true,
-      post: { ...post, category }
+      post: { ...post, category },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving post',
-      error: error.message
+      message: "Error retrieving post",
+      error: error.message,
     });
   }
 };
@@ -193,7 +238,7 @@ exports.createPost = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
@@ -201,22 +246,22 @@ exports.createPost = async (req, res) => {
     const postData = {
       ...req.body,
       authorId: req.user.id,
-      authorName: `${req.user.firstName} ${req.user.lastName}`
+      authorName: `${req.user.firstName} ${req.user.lastName}`,
     };
 
     // Create new post
-    const newPost = Post.create(postData);
+    const newPost = db.get("posts").push(postData).write();
 
     res.status(201).json({
       success: true,
-      message: 'Post created successfully',
-      post: newPost
+      message: "Post created successfully",
+      post: newPost,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: 'Error creating post',
-      error: error.message
+      message: "Error creating post",
+      error: error.message,
     });
   }
 };
@@ -228,24 +273,24 @@ exports.updatePost = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
-    const post = Post.findById(req.params.id);
-    
+    const post = db.get("posts").find({ id: req.params.id }).value();
+
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: 'Post not found'
+        message: "Post not found",
       });
     }
 
     // Check if user is authorized (author or admin)
-    if (post.authorId !== req.user.id && req.user.role !== 'admin') {
+    if (post.authorId !== req.user.id && req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to update this post'
+        message: "Not authorized to update this post",
       });
     }
 
@@ -254,14 +299,14 @@ exports.updatePost = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Post updated successfully',
-      post: updatedPost
+      message: "Post updated successfully",
+      post: updatedPost,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: 'Error updating post',
-      error: error.message
+      message: "Error updating post",
+      error: error.message,
     });
   }
 };
@@ -273,24 +318,24 @@ exports.deletePost = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
-    const post = Post.findById(req.params.id);
-    
+    const post = db.get("posts").find({ id: req.params.id }).value();
+
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: 'Post not found'
+        message: "Post not found",
       });
     }
 
     // Check if user is authorized (author or admin)
-    if (post.authorId !== req.user.id && req.user.role !== 'admin') {
+    if (post.authorId !== req.user.id && req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to delete this post'
+        message: "Not authorized to delete this post",
       });
     }
 
@@ -299,13 +344,13 @@ exports.deletePost = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Post deleted successfully'
+      message: "Post deleted successfully",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error deleting post',
-      error: error.message
+      message: "Error deleting post",
+      error: error.message,
     });
   }
 };
@@ -317,24 +362,24 @@ exports.publishPost = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
-    const post = Post.findById(req.params.id);
-    
+    const post = db.get("posts").find({ id: req.params.id }).value();
+
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: 'Post not found'
+        message: "Post not found",
       });
     }
 
     // Check if user is authorized (author or admin)
-    if (post.authorId !== req.user.id && req.user.role !== 'admin') {
+    if (post.authorId !== req.user.id && req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to publish this post'
+        message: "Not authorized to publish this post",
       });
     }
 
@@ -343,14 +388,14 @@ exports.publishPost = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Post published successfully',
-      post: updatedPost
+      message: "Post published successfully",
+      post: updatedPost,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error publishing post',
-      error: error.message
+      message: "Error publishing post",
+      error: error.message,
     });
   }
 };
@@ -362,24 +407,24 @@ exports.unpublishPost = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
-    const post = Post.findById(req.params.id);
-    
+    const post = db.get("posts").find({ id: req.params.id }).value();
+
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: 'Post not found'
+        message: "Post not found",
       });
     }
 
     // Check if user is authorized (author or admin)
-    if (post.authorId !== req.user.id && req.user.role !== 'admin') {
+    if (post.authorId !== req.user.id && req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to unpublish this post'
+        message: "Not authorized to unpublish this post",
       });
     }
 
@@ -388,14 +433,14 @@ exports.unpublishPost = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Post unpublished successfully',
-      post: updatedPost
+      message: "Post unpublished successfully",
+      post: updatedPost,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error unpublishing post',
-      error: error.message
+      message: "Error unpublishing post",
+      error: error.message,
     });
   }
 };

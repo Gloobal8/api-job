@@ -5,7 +5,7 @@ import RegisterView from "../views/RegisterView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import DashboardView from "../views/DashboardView.vue";
 import JobsView from "../views/jobs/JobsView.vue";
-import CompaniesView from "../views/CompaniesView.vue";
+//import CompaniesView from "../views/CompaniesView.vue";
 import store from "../store";
 
 // Import new views
@@ -81,13 +81,18 @@ const routes = [
   {
     path: "/companies",
     name: "companies",
-    component: CompaniesView,
+    component: () => import("../views/CompaniesView.vue"),
   },
   {
     path: "/companies/:id",
-    name: "CompanyDetail",
+    name: "company-detail",
     component: () => import("../views/companies/CompanyDetailView.vue"),
     props: true,
+  },
+  {
+    path: "/resume/:id",
+    name: "resume",
+    component: () => import("../views/companies/ResumeView.vue"),
   },
   {
     path: "/profile",
@@ -199,6 +204,11 @@ const routes = [
     name: "SiteMap",
     component: () => import("../views/SitemapView.vue"),
     meta: { requiresAuth: true, adminOnly: true }, // Opcional: restringir acceso solo a administradores
+  },
+  {
+    path: "/messages",
+    name: "Messages",
+    component: () => import("../views/MessagesView.vue"),
   },
 
   // Admin routes (optional)

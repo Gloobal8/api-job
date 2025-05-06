@@ -1,15 +1,15 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authController = require('../controllers/authController');
-const { verifyToken } = require('../middleware/authMiddleware');
+const authController = require("../controllers/authController");
+const { verifyToken } = require("../middleware/authMiddleware");
 
 // Register a new user
-router.post('/register', authController.register);
+router.post("/register", authController.register);
 
 // User login
-router.post('/login', authController.login);
+router.post("/login", authController.login);
 
 // Get current user info (protected route)
-router.get('/me', verifyToken, authController.getCurrentUser);
+router.get("/me", verifyToken, authController.getCurrentUser);
 
 module.exports = router;

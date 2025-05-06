@@ -129,10 +129,15 @@ export default {
       categoryToDelete: null,
       category: this.getEmptyCategory(),
       headers: [
-        { text: "Name", value: "name" },
-        { text: "Slug", value: "slug" },
-        { text: "Posts", value: "postCount", sortable: false },
-        { text: "Actions", value: "actions", sortable: false, align: "center" },
+        { title: "Name", value: "name" },
+        { title: "Slug", value: "slug" },
+        { title: "Posts", value: "postCount", sortable: false },
+        {
+          title: "Actions",
+          value: "actions",
+          sortable: false,
+          align: "center",
+        },
       ],
       nameRules: [
         (v) => !!v || "Name is required",

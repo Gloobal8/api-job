@@ -87,7 +87,7 @@
                 color="primary"
                 block
                 class="mt-4"
-                :disabled="!valid && !validateContent()"
+                :disabled="(!valid && !validateContent()) || saving"
                 :loading="saving"
                 type="submit"
               >
@@ -103,9 +103,12 @@
             <v-card-text>
               <v-select
                 v-model="post.categoryId"
-                :items="categoryOptions"
+                :items="safeCategories"
+                item-title="name"
+                item-value="id"
                 label="Category"
                 outlined
+                :disabled="categoriesLoading"
               ></v-select>
             </v-card-text>
           </v-card>
@@ -145,6 +148,8 @@
                 accept="image/*"
                 prepend-icon="mdi-camera"
                 @change="handleImageUpload"
+                :disabled="imageUploading"
+                :loading="imageUploading"
               ></v-file-input>
 
               <v-text-field
@@ -176,6 +181,8 @@ export default {
       useRichEditor: true,
       contentError: null,
       featuredImageFile: null,
+      imageUploading: false,
+      categoriesLoading: false,
       post: {
         title: "",
         content: "",
@@ -185,6 +192,7 @@ export default {
         status: "draft",
         featuredImage: "",
         metaDescription: "",
+        authorId: null,
       },
       titleRules: [
         (v) => !!v || "Title is required",
@@ -197,8 +205,8 @@ export default {
           (v && v.length >= 50) || "Content must be at least 50 characters",
       ],
       statusOptions: [
-        { text: "Draft", value: "draft" },
-        { text: "Published", value: "published" },
+        { title: "Draft", value: "draft" },
+        { title: "Published", value: "published" },
       ],
       popularTags: [
         "JavaScript",
@@ -209,45 +217,101 @@ export default {
         "Career",
         "Tutorial",
       ],
-      tinymceApiKey: "your-tinymce-api-key", // Replace with your TinyMCE API key
+      tinymceApiKey: "nncyt616088r0vquiaqbk55q62hymk0hx6yr4ud4x8t0e58f", // Replace with your TinyMCE API key
       editorConfig: {
         height: 500,
         menubar: true,
-        plugins: [
-          "advlist autolink lists link image charmap print preview anchor",
-          "searchreplace visualblocks code fullscreen",
-          "insertdatetime media table paste code help wordcount",
-        ],
+        // Reducir la lista de plugins a los más esenciales y que funcionan con tu API key
+        plugins: ["link", "image", "lists", "code", "help", "wordcount"],
+        // Simplificar la barra de herramientas
         toolbar:
           "undo redo | formatselect | bold italic backcolor | \
           alignleft aligncenter alignright alignjustify | \
-          bullist numlist outdent indent | removeformat | help",
+          bullist numlist outdent indent | link image | removeformat | help",
+        // Agregar opciones para mejorar la experiencia
+        branding: false,
+        promotion: false,
+        resize: true,
+        // Manejar errores de carga de plugins
+        setup: function (editor) {
+          editor.on("init", function () {
+            console.log("TinyMCE initialized");
+          });
+
+          // Capturar y manejar errores
+          editor.on("LoadError", function (e) {
+            console.warn("TinyMCE plugin load error:", e);
+          });
+        },
       },
     };
   },
   computed: {
     ...mapState({
-      categories: (state) => state.blog.categories,
-      loading: (state) => state.blog.loading,
-      error: (state) => state.blog.error,
-      user: (state) => state.auth.user,
+      categories: (state) => state.blog?.categories || [],
+      loading: (state) => state.blog?.loading || false,
+      error: (state) => state.blog?.error || null,
+      user: (state) => state.auth?.user || null,
     }),
+
+    // Propiedades existentes
     categoryOptions() {
-      return this.categories.map((category) => ({
-        text: category.name,
+      // Versión mejorada con programación defensiva
+      return (this.categories || []).map((category) => ({
+        title: category.name || "Unnamed Category", // Cambiar text a title para Vuetify 3
         value: category.id,
       }));
     },
+
     isEditing() {
       return !!this.$route.params.id;
+    },
+
+    isAuthenticated() {
+      return !!this.user;
+    },
+
+    // Nuevas propiedades computadas seguras
+    safeCategories() {
+      return this.categories || [];
+    },
+
+    postTitle() {
+      return this.post?.title || "";
+    },
+
+    postContent() {
+      return this.post?.content || "";
+    },
+
+    postCategoryId() {
+      return this.post?.categoryId || null;
+    },
+
+    postStatus() {
+      return this.post?.status || "draft";
+    },
+
+    userRole() {
+      return this.user?.role || "guest";
+    },
+
+    isAdmin() {
+      return this.userRole === "admin";
+    },
+
+    canEdit() {
+      if (!this.user) return false;
+      if (this.isAdmin) return true;
+      return this.post?.authorId === this.user.id;
     },
   },
   async created() {
     // Redirect if not logged in
-    if (!this.user) {
+    /*if (!this.user) {
       this.$router.push("/login?redirect=" + this.$route.fullPath);
       return;
-    }
+    }*/
 
     await this.fetchCategories();
 
@@ -264,16 +328,24 @@ export default {
     }),
     async loadPost() {
       try {
+        // Indicar estado de carga
+        this.loading = true;
+
         await this.fetchPostById(this.$route.params.id);
         const post = this.$store.state.blog.post;
 
+        // Verificar si se obtuvo el post correctamente
         if (!post) {
+          this.$store.dispatch("snackbar/showSnackbar", {
+            text: "Post not found or has been deleted",
+            color: "warning",
+          });
           this.$router.push("/blog");
           return;
         }
 
         // Check if user is authorized to edit
-        if (post.authorId !== this.user.id && this.user.role !== "admin") {
+        if (post.authorId !== this.user?.id && this.user?.role !== "admin") {
           this.$store.dispatch("snackbar/showSnackbar", {
             text: "You are not authorized to edit this post",
             color: "error",
@@ -282,14 +354,28 @@ export default {
           return;
         }
 
-        // Copy post data to our form
-        this.post = { ...post };
+        // Copy post data to our form with safe defaults
+        this.post = {
+          title: post.title || "",
+          content: post.content || "",
+          slug: post.slug || "",
+          categoryId: post.categoryId || null,
+          tags: post.tags || [],
+          status: post.status || "draft",
+          featuredImage: post.featuredImage || "",
+          metaDescription: post.metaDescription || "",
+          ...post,
+        };
       } catch (error) {
         console.error("Error loading post:", error);
         this.$store.dispatch("snackbar/showSnackbar", {
-          text: "Error loading post",
+          text: "Error loading post: " + (error.message || "Unknown error"),
           color: "error",
         });
+        // Redirigir al usuario a una página segura
+        this.$router.push("/blog");
+      } finally {
+        this.loading = false;
       }
     },
     validateContent() {
@@ -304,19 +390,38 @@ export default {
       if (!this.featuredImageFile) return;
 
       try {
+        // Indicar estado de carga
+        this.imageUploading = true;
+
         // In a real app, you would upload the file to your server or a cloud storage service
         // Here we're just creating a data URL for demo purposes
         const reader = new FileReader();
-        reader.onload = (e) => {
-          this.post.featuredImage = e.target.result;
-        };
-        reader.readAsDataURL(this.featuredImageFile);
+
+        // Usar promesa para manejar la carga asíncrona
+        const imageUrl = await new Promise((resolve, reject) => {
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = (e) =>
+            reject(new Error("Failed to read image file"));
+          reader.readAsDataURL(this.featuredImageFile);
+        });
+
+        this.post.featuredImage = imageUrl;
+
+        // Opcional: Mostrar mensaje de éxito
+        this.$store.dispatch("snackbar/showSnackbar", {
+          text: "Image uploaded successfully",
+          color: "success",
+        });
       } catch (error) {
         console.error("Error uploading image:", error);
         this.$store.dispatch("snackbar/showSnackbar", {
-          text: "Error uploading image",
+          text: "Error uploading image: " + (error.message || "Unknown error"),
           color: "error",
         });
+        // Mantener la imagen anterior si hay error
+        this.featuredImageFile = null;
+      } finally {
+        this.imageUploading = false;
       }
     },
     async savePost() {
@@ -325,32 +430,59 @@ export default {
       try {
         this.saving = true;
 
+        // Preparar los datos del post con valores por defecto
+        const postData = {
+          ...this.post,
+          title: this.post.title.trim(),
+          content: this.post.content || "",
+          slug: this.post.slug?.trim() || "",
+          status: this.post.status || "draft",
+        };
+
         if (this.isEditing) {
           await this.updatePost({
             id: this.$route.params.id,
-            postData: this.post,
+            postData: postData,
           });
           this.$store.dispatch("snackbar/showSnackbar", {
             text: "Post updated successfully",
             color: "success",
           });
         } else {
-          const newPost = await this.createPost(this.post);
-          this.$store.dispatch("snackbar/showSnackbar", {
-            text: "Post created successfully",
-            color: "success",
-          });
-          this.$router.push(`/blog/${newPost.id}`);
+          const newPost = await this.createPost(postData);
+
+          if (newPost && newPost.id) {
+            this.$store.dispatch("snackbar/showSnackbar", {
+              text: "Post created successfully",
+              color: "success",
+            });
+            this.$router.push(`/blog/${newPost.id}`);
+          } else {
+            throw new Error("Failed to create post - no ID returned");
+          }
         }
       } catch (error) {
         console.error("Error saving post:", error);
         this.$store.dispatch("snackbar/showSnackbar", {
-          text: error.response?.data?.message || "Error saving post",
+          text:
+            error.response?.data?.message ||
+            "Error saving post: " + (error.message || "Unknown error"),
           color: "error",
         });
       } finally {
         this.saving = false;
       }
+    },
+    showError(message, timeout = 5000) {
+      // Si tienes un componente de snackbar global
+      this.$store.dispatch("snackbar/showSnackbar", {
+        text: message,
+        color: "error",
+        timeout: timeout,
+      });
+
+      // Alternativa si no tienes un sistema global de notificaciones
+      console.error(message);
     },
   },
 };

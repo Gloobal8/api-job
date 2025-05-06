@@ -407,6 +407,8 @@ export default {
       return (
         this.currentUser &&
         this.company &&
+        this.company.userId &&
+        this.currentUser.id &&
         this.company.userId === this.currentUser.id
       );
     },
@@ -425,6 +427,11 @@ export default {
           `/companies/${this.$route.params.id}`
         );
         this.company = response.data;
+
+        // Verificar que la respuesta incluya userId
+        if (this.company && !this.company.userId) {
+          console.warn("Company data does not include userId:", this.company);
+        }
       } catch (error) {
         console.error("Error fetching company details:", error);
         this.$store.commit("SET_ERROR", "Failed to fetch company details");

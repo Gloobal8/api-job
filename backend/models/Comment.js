@@ -1,219 +1,104 @@
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const fs = require("fs");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
-// Path to the file that will store the comments
-const dataPath = path.join(__dirname, '../data/comments.json');
-
-// Ensure the data directory and file exist
-if (!fs.existsSync(path.dirname(dataPath))) {
-  fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-}
-
-if (!fs.existsSync(dataPath)) {
-  fs.writeFileSync(dataPath, JSON.stringify([]));
-}
+const DB_PATH = path.join(__dirname, "../data/db.json");
 
 class Comment {
-  constructor(data) {
-    this.id = data.id || uuidv4();
-    this.postId = data.postId;
-    this.userId = data.userId;
-    this.userName = data.userName;
-    this.userEmail = data.userEmail;
-    this.content = data.content;
-    this.status = data.status || 'pending'; // pending, approved, spam
-    this.parentId = data.parentId || null; // For threaded comments
-    this.createdAt = data.createdAt || new Date().toISOString();
-    this.updatedAt = data.updatedAt || new Date().toISOString();
+  static findByPostId(postId) {
+    try {
+      const data = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+      return (data.comments || []).filter(
+        (comment) => comment.postId === postId
+      );
+    } catch (error) {
+      console.error("Error reading database:", error);
+      return [];
+    }
   }
 
-  // Validate comment data
-  static validateComment(data) {
-    const errors = [];
+  static create(commentData) {
+    try {
+      const data = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
 
-    if (!data.postId) {
-      errors.push('Post ID is required');
+      // Generate ID
+      const id = uuidv4();
+
+      // Set default values
+      const now = new Date().toISOString();
+      const newComment = {
+        id,
+        postId: commentData.postId,
+        content: commentData.content,
+        authorId: commentData.authorId,
+        authorName: commentData.authorName,
+        parentId: commentData.parentId || null,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      // Add to database
+      if (!data.comments) data.comments = [];
+      data.comments.push(newComment);
+
+      // Save to database
+      fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf8");
+
+      return newComment;
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      throw new Error("Failed to create comment");
     }
-
-    if (!data.content || typeof data.content !== 'string') {
-      errors.push('Content is required and must be a string');
-    }
-
-    if (!data.userName || typeof data.userName !== 'string') {
-      errors.push('User name is required and must be a string');
-    }
-
-    if (data.status && !['pending', 'approved', 'spam'].includes(data.status)) {
-      errors.push('Status must be one of: pending, approved, spam');
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors
-    };
   }
 
-  // Get all comments with optional filtering
-  static findAll(filters = {}) {
-    const comments = JSON.parse(fs.readFileSync(dataPath));
-    
-    return comments.filter(comment => {
-      // Filter by status
-      if (filters.status && comment.status !== filters.status) {
-        return false;
+  static update(id, commentData) {
+    try {
+      const data = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+      const comments = data.comments || [];
+      const commentIndex = comments.findIndex((comment) => comment.id === id);
+
+      if (commentIndex === -1) {
+        throw new Error("Comment not found");
       }
-      
-      // Filter by post
-      if (filters.postId && comment.postId !== filters.postId) {
-        return false;
-      }
-      
-      // Filter by user
-      if (filters.userId && comment.userId !== filters.userId) {
-        return false;
-      }
-      
-      // Filter by parent (for threaded comments)
-      if (filters.parentId !== undefined) {
-        if (filters.parentId === null) {
-          return comment.parentId === null;
-        } else {
-          return comment.parentId === filters.parentId;
-        }
-      }
-      
-      return true;
-    });
-  }
 
-  // Get a comment by ID
-  static findById(id) {
-    const comments = JSON.parse(fs.readFileSync(dataPath));
-    return comments.find(comment => comment.id === id);
-  }
+      // Update comment
+      comments[commentIndex] = {
+        ...comments[commentIndex],
+        content: commentData.content,
+        updatedAt: new Date().toISOString(),
+      };
 
-  // Get comments for a specific post
-  static findByPost(postId, approvedOnly = true) {
-    const filters = { postId };
-    if (approvedOnly) {
-      filters.status = 'approved';
+      // Save to database
+      data.comments = comments;
+      fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf8");
+
+      return comments[commentIndex];
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      throw new Error("Failed to update comment");
     }
-    return this.findAll(filters);
   }
 
-  // Get top-level comments for a post (no parent)
-  static findTopLevelByPost(postId, approvedOnly = true) {
-    const filters = { postId, parentId: null };
-    if (approvedOnly) {
-      filters.status = 'approved';
-    }
-    return this.findAll(filters);
-  }
-
-  // Get replies to a comment
-  static findReplies(commentId, approvedOnly = true) {
-    const filters = { parentId: commentId };
-    if (approvedOnly) {
-      filters.status = 'approved';
-    }
-    return this.findAll(filters);
-  }
-
-  // Create a new comment
-  static create(data) {
-    const validation = this.validateComment(data);
-    if (!validation.valid) {
-      throw new Error(`Invalid comment data: ${validation.errors.join(', ')}`);
-    }
-
-    const comments = JSON.parse(fs.readFileSync(dataPath));
-    const newComment = new Comment(data);
-    comments.push(newComment);
-    
-    fs.writeFileSync(dataPath, JSON.stringify(comments, null, 2));
-    return newComment;
-  }
-
-  // Update a comment
-  static update(id, data) {
-    const comments = JSON.parse(fs.readFileSync(dataPath));
-    const index = comments.findIndex(comment => comment.id === id);
-    
-    if (index === -1) {
-      throw new Error('Comment not found');
-    }
-    
-    // Update the comment
-    const updatedComment = {
-      ...comments[index],
-      ...data,
-      updatedAt: new Date().toISOString()
-    };
-    
-    comments[index] = updatedComment;
-    fs.writeFileSync(dataPath, JSON.stringify(comments, null, 2));
-    
-    return updatedComment;
-  }
-
-  // Delete a comment
   static delete(id) {
-    const comments = JSON.parse(fs.readFileSync(dataPath));
-    const index = comments.findIndex(comment => comment.id === id);
-    
-    if (index === -1) {
-      throw new Error('Comment not found');
-    }
-    
-    // Also delete all replies to this comment
-    const commentId = comments[index].id;
-    const remainingComments = comments.filter(comment => 
-      comment.id !== commentId && comment.parentId !== commentId
-    );
-    
-    fs.writeFileSync(dataPath, JSON.stringify(remainingComments, null, 2));
-    
-    return { success: true };
-  }
+    try {
+      const data = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+      const comments = data.comments || [];
+      const commentIndex = comments.findIndex((comment) => comment.id === id);
 
-  // Approve a comment
-  static approve(id) {
-    const comment = this.findById(id);
-    if (!comment) {
-      throw new Error('Comment not found');
-    }
-    
-    return this.update(id, { status: 'approved' });
-  }
+      if (commentIndex === -1) {
+        throw new Error("Comment not found");
+      }
 
-  // Mark a comment as spam
-  static markAsSpam(id) {
-    const comment = this.findById(id);
-    if (!comment) {
-      throw new Error('Comment not found');
-    }
-    
-    return this.update(id, { status: 'spam' });
-  }
+      // Remove from database
+      comments.splice(commentIndex, 1);
+      data.comments = comments;
+      fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf8");
 
-  // Get threaded comments for a post
-  static getThreadedComments(postId) {
-    const allComments = this.findByPost(postId);
-    const topLevelComments = allComments.filter(comment => !comment.parentId);
-    
-    const buildReplies = (parentId) => {
-      const replies = allComments.filter(comment => comment.parentId === parentId);
-      return replies.map(reply => ({
-        ...reply,
-        replies: buildReplies(reply.id)
-      }));
-    };
-    
-    return topLevelComments.map(comment => ({
-      ...comment,
-      replies: buildReplies(comment.id)
-    }));
+      return true;
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      throw new Error("Failed to delete comment");
+    }
   }
 }
 
