@@ -10,7 +10,7 @@ class dbClient {
     async connectDB() {
         try {
             await this.client.connect()
-            this.db = this.client.db('TemporaryJobs');
+            this.db = this.client.db('Cluster0');
             console.log('Conexión exitosa')
         } catch (error) {
             console.log(error)
