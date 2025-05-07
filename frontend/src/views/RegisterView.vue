@@ -159,7 +159,7 @@ export default {
         })
           .then(() => {
             // Show success message and redirect to login
-            this.success = 'Usuario registrado con éxito';
+            this.success = 'User registered successfully';
             setTimeout(() => {
               this.$router.push({
                 path: '/login',
