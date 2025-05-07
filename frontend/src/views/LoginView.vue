@@ -41,8 +41,7 @@
             </v-form>
           </v-card-text>
           
-          <v-card-actions>
-            <v-spacer></v-spacer>
+          <v-card-actions class="d-flex justify-center">
             <v-btn
               color="primary"
               :loading="loading"

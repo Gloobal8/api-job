@@ -1,21 +1,16 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const db = require('../config/db');
+const Auth = require('../models/Auth')
 const { v4: uuidv4 } = require('uuid');
 
 // Register a new user
-exports.register = (req, res) => {
-  const { name, email, password, role } = req.body;
+exports.register = async (req, res) => {
   
+  const { name, email, password, role } = req.body;
+
   // Validate input
   if (!name || !email || !password || !role) {
     return res.status(400).json({ message: 'All fields are required' });
-  }
-  
-  // Check if email already exists
-  const existingUser = db.get('users').find({ email }).value();
-  if (existingUser) {
-    return res.status(400).json({ message: 'Email already in use' });
   }
   
   // Create new user
@@ -29,22 +24,10 @@ exports.register = (req, res) => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  
-  // Save user to database
-  db.get('users')
-    .push(newUser)
-    .write();
-  
-  // Return success message
-  res.status(201).json({ 
-    message: 'User registered successfully',
-    user: {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role
-    }
-  });
+
+  const data = await Auth.register(newUser)
+  res.status(data.status ? 201 : 400).json(data);
+  return console.log(data)
 };
 
 // User login

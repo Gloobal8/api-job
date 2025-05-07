@@ -17,6 +17,13 @@
             >
               {{ error }}
             </v-alert>
+            <v-alert
+              v-if="success"
+              type="success"
+              dismissible
+            >
+              {{ success }}
+            </v-alert>
             
             <v-form ref="form" v-model="valid" @submit.prevent="register">
               <v-text-field
@@ -41,8 +48,8 @@
                 :rules="passwordRules"
                 label="Password"
                 prepend-icon="mdi-lock"
-                :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append="showPassword = !showPassword"
+                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                @click:append-inner="showPassword = !showPassword"
                 :type="showPassword ? 'text' : 'password'"
                 required
               ></v-text-field>
@@ -74,8 +81,7 @@
             </v-form>
           </v-card-text>
           
-          <v-card-actions>
-            <v-spacer></v-spacer>
+          <v-card-actions class="d-flex justify-center ">
             <v-btn
               color="primary"
               :loading="loading"
@@ -112,6 +118,7 @@ export default {
       showPassword: false,
       loading: false,
       error: null,
+      success: null,
       nameRules: [
         v => !!v || 'Name is required',
         v => v.length >= 3 || 'Name must be at least 3 characters'
@@ -142,6 +149,7 @@ export default {
       if (this.$refs.form.validate()) {
         this.loading = true;
         this.error = null;
+        this.success = null;
         
         this.$store.dispatch('register', {
           name: this.name,
@@ -151,10 +159,14 @@ export default {
         })
           .then(() => {
             // Show success message and redirect to login
-            this.$router.push({
-              path: '/login',
-              query: { registered: 'success' }
-            });
+            this.success = 'Usuario registrado con éxito';
+            setTimeout(() => {
+              this.$router.push({
+                path: '/login',
+                query: { registered: 'success' }
+              });
+            }, 1000);
+
           })
           .catch(error => {
             this.error = error.response?.data?.message || 'Registration failed. Please try again.';

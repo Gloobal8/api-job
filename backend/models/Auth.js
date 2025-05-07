@@ -1,0 +1,38 @@
+const dbClient = require('../config/db')
+
+class Auth {
+    static async register(user) {
+      try {
+            const usersCollection = dbClient.db.collection('users');
+            const existingUser = await usersCollection.findOne({ email: user.email });
+
+            if (existingUser) {
+                return { 
+                    status: false, 
+                    message: 'Email already in use' 
+                };
+            }
+
+            const result = await usersCollection.insertOne(user);
+            if (result.insertedId) {
+                return { 
+                   status: true,
+                   message: 'User registered successfully',
+                   user: {
+                       id: user.id,
+                       insertedId: result.insertedId,
+                       name: user.name,
+                       email: user.email,
+                       role: user.role
+                   }
+                }
+            } 
+
+            return { status: false, message: 'Failed to register user' };
+      } catch (error) {
+        console.error('Error reading database:', error);
+        return [];
+      }
+    }
+}
+module.exports = Auth;
