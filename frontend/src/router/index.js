@@ -27,6 +27,7 @@ import CategoryList from "@/views/blog/CategoryList.vue";
 import CouponsView from "../views/admin/CouponsView.vue";
 import TestimonialsAdmin from "@/views/admin/TestimonialsAdmin.vue";
 import PackagesView from "../views/admin/PackagesView.vue";
+import VerifyEmail from "../views/VerifyEmail.vue";
 
 const routes = [
   {
@@ -43,6 +44,11 @@ const routes = [
     path: "/register",
     name: "register",
     component: RegisterView,
+  },
+  {
+    path: "/verify-email",
+    name: "verify-email",
+    component: VerifyEmail,
   },
   {
     path: "/dashboard",

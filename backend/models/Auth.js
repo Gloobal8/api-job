@@ -1,4 +1,5 @@
 const dbClient = require('../config/db')
+const SendMail = require('../utils/sendMail')
 
 class Auth {
     static async register(user) {
@@ -12,7 +13,12 @@ class Auth {
                     message: 'Email already in use' 
                 };
             }
-
+            const sendmail = await SendMail.sendMail(user.email, 'Gloobal Jobs - Email verification', user.name, '123456789asdfghjk123456');
+            console.log({
+                type: 'sendMail',
+                data: sendmail
+            })
+            return;
             const result = await usersCollection.insertOne(user);
             if (result.insertedId) {
                 return { 
@@ -23,7 +29,8 @@ class Auth {
                        insertedId: result.insertedId,
                        name: user.name,
                        email: user.email,
-                       role: user.role
+                       role: user.role,
+                       isAuthenticated: user.isAuthenticated,
                    }
                 }
             } 
@@ -33,6 +40,9 @@ class Auth {
         console.error('Error reading database:', error);
         return [];
       }
+    }
+    static sendMail() {
+
     }
 }
 module.exports = Auth;

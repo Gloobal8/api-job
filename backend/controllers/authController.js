@@ -21,6 +21,7 @@ exports.register = async (req, res) => {
     email,
     password: hashedPassword,
     role, // 'jobseeker' or 'employer'
+    isAuthenticated: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };

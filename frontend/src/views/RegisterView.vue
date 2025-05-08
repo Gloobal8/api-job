@@ -101,6 +101,38 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="showSuccessDialog" max-width="500" persistent>
+      <v-card>
+        <v-card-title class="text-h5 bg-success text-white">
+          Registro exitoso
+        </v-card-title>
+        <v-card-text class="pt-4">
+          <p>¡Tu cuenta ha sido creada con éxito!</p>
+          <p>
+            Hemos enviado un correo de verificación a
+            <strong>{{ email }}</strong
+            >. Por favor, revisa tu bandeja de entrada y haz clic en el enlace
+            de verificación para activar tu cuenta.
+          </p>
+
+          <div v-if="emailPreviewUrl" class="mt-4">
+            <p class="text-caption">
+              (Modo desarrollo:
+              <a :href="emailPreviewUrl" target="_blank"
+                >Ver email de verificación</a
+              >)
+            </p>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="goToLogin">
+            Ir a inicio de sesión
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -119,6 +151,7 @@ export default {
       loading: false,
       error: null,
       success: null,
+      showSuccessDialog: false,
       nameRules: [
         v => !!v || 'Name is required',
         v => v.length >= 3 || 'Name must be at least 3 characters'
@@ -160,13 +193,8 @@ export default {
           .then(() => {
             // Show success message and redirect to login
             this.success = 'User registered successfully';
-            setTimeout(() => {
-              this.$router.push({
-                path: '/login',
-                query: { registered: 'success' }
-              });
-            }, 1000);
-
+            this.showSuccessDialog = true;
+            localStorage.setItem("pendingVerificationEmail", this.email);
           })
           .catch(error => {
             this.error = error.response?.data?.message || 'Registration failed. Please try again.';
@@ -175,7 +203,14 @@ export default {
             this.loading = false;
           });
       }
-    }
+    },
+    goToLogin() {
+      this.showSuccessDialog = false;
+      this.$router.push({
+        path: '/login',
+        query: { registered: 'success' }
+      });
+    },
   }
 }
 </script>
