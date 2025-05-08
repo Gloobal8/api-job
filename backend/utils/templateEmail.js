@@ -1,5 +1,6 @@
 class TemplateEmail {
     static template(name, verificationLink) {
+        const fullName = name.split(' ').map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(' ');
         return `<center>
     <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="m_-8230687900900925424bodyTable" style="border-collapse:collapse;height:100%;margin:0;padding:0;width:100%;background-color:#eff3f6">
      <tbody><tr>
@@ -43,7 +44,7 @@ class TemplateEmail {
                <tbody>
                 <tr>
                  <td valign="top" class="m_-8230687900900925424mcnTextContent" style="padding-top:0;padding-right:40px;padding-bottom:0;padding-left:40px;word-break:break-word;color:#424242;font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left">
-                  <h1 style="display:block;margin:0;padding:0;color:#121212;font-family:Inter,Helvetica,Arial,sans-serif;font-size:22px;font-style:normal;font-weight:bold;line-height:30px;letter-spacing:normal;text-align:left">Hello ${ name }! <img data-emoji="👋" class="an1" alt="👋" aria-label="👋" draggable="false" src="https://fonts.gstatic.com/s/e/notoemoji/16.0/1f44b/32.png" loading="lazy"></h1>
+                  <h1 style="display:block;margin:0;padding:0;color:#121212;font-family:Inter,Helvetica,Arial,sans-serif;font-size:22px;font-style:normal;font-weight:bold;line-height:30px;letter-spacing:normal;text-align:left">Hello ${ fullName }! <img data-emoji="👋" class="an1" alt="👋" aria-label="👋" draggable="false" src="https://fonts.gstatic.com/s/e/notoemoji/16.0/1f44b/32.png" loading="lazy"></h1>
                   <p style="margin:30px 0;padding:0;color:#424242;font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left">
                     Thank you for being part of Gloobal Jobs!<br>
                     We need to verify that we have your correct email address.

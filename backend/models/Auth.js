@@ -16,7 +16,14 @@ class Auth {
             const sendmail = await SendMail.sendMail(user.email, 'Gloobal Jobs - Email verification', user.name);
             console.log({
                 archive: 'Auth.js',
-                data: sendmail
+                data: sendmail,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    isAuthenticated: user.isAuthenticated,
+                }
             })
 
             return;
