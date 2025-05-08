@@ -9,6 +9,9 @@ router.post("/register", authController.register);
 // User login
 router.post("/login", authController.login);
 
+// Confirm your email
+router.post("/verify-email", authController.verifyEmail);
+
 // Get current user info (protected route)
 router.get("/me", verifyToken, authController.getCurrentUser);
 

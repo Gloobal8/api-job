@@ -145,6 +145,27 @@ export default createStore({
         commit("SET_LOADING", false);
       }
     },
+    async verifyEmail({ commit }, token) {
+      try {
+          commit("SET_LOADING", true);
+          // Make a request to the /verify-email endpoint with the token
+          console.log({
+            archive: 'store',
+            token
+          })
+          const response = await axios.post("/auth/verify-email", token);
+          commit("SET_ERROR", null);
+          return response; // Return the response for further handling if needed
+      } catch (error) {
+          commit(
+              "SET_ERROR",
+              error.response ? error.response.data.message : "Verification failed"
+          );
+          throw error; // Rethrow the error for further handling in the component
+      } finally {
+          commit("SET_LOADING", false);
+      }
+    },
     async fetchUser({ commit, state }) {
       if (!state.token) return;
 

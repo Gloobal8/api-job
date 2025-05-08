@@ -194,7 +194,6 @@ export default {
             // Show success message and redirect to login
             this.success = 'User registered successfully';
             this.showSuccessDialog = true;
-            localStorage.setItem("pendingVerificationEmail", this.email);
           })
           .catch(error => {
             this.error = error.response?.data?.message || 'Registration failed. Please try again.';

@@ -13,11 +13,12 @@ class Auth {
                     message: 'Email already in use' 
                 };
             }
-            const sendmail = await SendMail.sendMail(user.email, 'Gloobal Jobs - Email verification', user.name, '123456789asdfghjk123456');
+            const sendmail = await SendMail.sendMail(user.email, 'Gloobal Jobs - Email verification', user.name);
             console.log({
-                type: 'sendMail',
+                archive: 'Auth.js',
                 data: sendmail
             })
+
             return;
             const result = await usersCollection.insertOne(user);
             if (result.insertedId) {
@@ -40,9 +41,6 @@ class Auth {
         console.error('Error reading database:', error);
         return [];
       }
-    }
-    static sendMail() {
-
     }
 }
 module.exports = Auth;

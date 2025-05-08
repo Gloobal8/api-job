@@ -76,40 +76,22 @@
       };
     },
     async mounted() {
-      const token = this.$route.params.token;
-      if (!token) {
-        this.handleError("Token de verificación no proporcionado.", "missing");
-        return;
-      }
-  
-      try {
-        const response = await axios.get(`/api/auth/verify-email/${token}`);
-        this.verified = true;
-        this.statusMessage = "¡Email verificado con éxito!";
-        this.statusDescription =
-          "Tu cuenta ha sido verificada. Ahora puedes iniciar sesión y acceder a todas las funcionalidades.";
-      } catch (error) {
-        console.error("Error verifying email:", error);
-  
-        let errorMessage = "Hubo un error al verificar tu email.";
-        let errorType = "unknown";
-  
-        if (error.response) {
-          errorMessage = error.response.data.message || errorMessage;
-  
-          if (errorMessage.includes("expirado")) {
-            errorType = "expired";
-            this.userEmail =
-              localStorage.getItem("pendingVerificationEmail") || "";
-          } else if (errorMessage.includes("inválido")) {
-            errorType = "invalid";
-          }
+        const token = this.$route.query.token;
+        if (!token) {
+            this.handleError("Token de verificación no proporcionado.", "missing");
+            return;
+        }
+
+        try {
+            const response = await this.$store.dispatch("verifyEmail", {token});
+            // Handle successful verification (e.g., show a success message)
+            console.log(response);
+        } catch (error) {
+            // Handle error (e.g., show an error message)
+            console.error(error);
         }
   
-        this.handleError(errorMessage, errorType);
-      } finally {
-        this.loading = false;
-      }
+     
     },
     methods: {
       handleError(message, type) {

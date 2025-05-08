@@ -1,5 +1,5 @@
 // User model definition for candidate/employer profiles
-
+const dbClient = require("../config/db");
 const userModel = {
   // Required fields
   id: String,
@@ -142,7 +142,35 @@ const validateUser = (user) => {
   return true;
 };
 
+
+class User {
+  static async getByEmail(email) {
+    try {
+      const usersCollection = dbClient.db.collection('users');
+      const existingUser = await usersCollection.findOne({ email });
+
+      if (existingUser) {
+          existingUser.set('isAuthenticated', true);
+          const updatedUser = await existingUser.save();
+          return { 
+              status: true, 
+              message: 'Verification Successfully!' ,
+              updatedUser
+          };
+      }
+      return { 
+          status: false, 
+          message: 'Invalid verification!'
+      };
+    } catch (error) {
+        console.error('Error fetching user by email:', error);
+        throw error; // Rethrow the error for further handling
+    }
+  }
+}
+
 module.exports = {
   userModel,
   validateUser,
+  User
 };

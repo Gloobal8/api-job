@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Auth = require('../models/Auth')
 const { v4: uuidv4 } = require('uuid');
+const { User } = require('../models/user');
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -81,3 +82,37 @@ exports.getCurrentUser = (req, res) => {
     role: user.role
   });
 };
+
+exports.verifyEmail = (req, res) => {
+  const token = req.body.token;
+  console.log(req)
+  console.log({
+    archive: 'authController.js',
+    data: 'Confirm your email',
+    token
+  })
+
+  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+    console.log('Test2')
+
+    if (err) {
+        return res.status(400).send('Invalid or expired verification token.');
+    }
+
+    const email = decoded.to;
+
+    console.log({
+      archive: 'authController.js',
+      data: 'Verification',
+      email
+    })
+    const userModel = await User.getByEmail('codezardi@gmail.com')
+
+    res.status(userModel.status ? 201 : 400).json(userModel);
+
+    console.log({
+      archive: 'authController.js',
+      data: userModel
+    })
+  });
+}
