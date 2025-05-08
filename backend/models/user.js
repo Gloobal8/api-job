@@ -167,6 +167,16 @@ class User {
         throw error; // Rethrow the error for further handling
     }
   }
+  static async getAllUsers() {
+    try {
+        const usersCollection = dbClient.db.collection('users');
+        const users = await usersCollection.find({}).toArray();
+        return users;
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+    }
+}
 }
 
 module.exports = {

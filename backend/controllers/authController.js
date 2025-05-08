@@ -83,6 +83,14 @@ exports.getCurrentUser = (req, res) => {
   });
 };
 
+// Get All
+exports.getAllUsers = async (req, res) => {
+  // User information is attached to the request by the auth middleware
+  const users = await User.getAllUsers();
+  res.status(201).json(users)
+  
+};
+
 exports.verifyEmail = (req, res) => {
   const token = req.body.token;
   console.log(req)

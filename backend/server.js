@@ -55,12 +55,11 @@ const cookieParser = require("cookie-parser");
 
 // Create Express app
 const app = express();
-
 // Middleware
 // Configuración CORS más específica
 app.use(
   cors({
-    origin: ["http://localhost:8080", "http://localhost:5000"], // Orígenes permitidos
+    origin: ["http://localhost:8080", "http://localhost:5000", "http://127.0.0.1:5500"], // Orígenes permitidos
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Permite cookies en solicitudes cross-origin
