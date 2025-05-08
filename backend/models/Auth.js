@@ -25,8 +25,6 @@ class Auth {
                     isAuthenticated: user.isAuthenticated,
                 }
             })
-
-            return;
             const result = await usersCollection.insertOne(user);
             if (result.insertedId) {
                 return { 
@@ -42,7 +40,6 @@ class Auth {
                    }
                 }
             } 
-
             return { status: false, message: 'Failed to register user' };
       } catch (error) {
         console.error('Error reading database:', error);

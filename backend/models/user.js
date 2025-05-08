@@ -149,19 +149,37 @@ class User {
       const usersCollection = dbClient.db.collection('users');
       const existingUser = await usersCollection.findOne({ email });
 
-      if (existingUser) {
-          existingUser.set('isAuthenticated', true);
-          const updatedUser = await existingUser.save();
-          return { 
-              status: true, 
-              message: 'Verification Successfully!' ,
-              updatedUser
+      if (!existingUser) {
+        return {
+            status: false,
+            message: 'User not found!'
+        };
+      }
+
+      const result = await usersCollection.updateOne(
+        { email },
+        { $set: { isAuthenticated: true } }
+      );
+      console.log({
+        type: 'result',
+        data: result
+      })
+
+    if (result.modifiedCount === 1) {
+        // Optionally, fetch the updated user to return it
+        const updatedUser = await usersCollection.findOne({ email });
+        return {
+            status: true,
+            message: 'Verification Successfully!',
+            updatedUser
+        };
+      } else {
+          return {
+              status: false,
+              message: 'User could not be updated!'
           };
       }
-      return { 
-          status: false, 
-          message: 'Invalid verification!'
-      };
+
     } catch (error) {
         console.error('Error fetching user by email:', error);
         throw error; // Rethrow the error for further handling
