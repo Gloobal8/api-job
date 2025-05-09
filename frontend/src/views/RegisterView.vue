@@ -18,7 +18,7 @@
               {{ error }}
             </v-alert>
             
-            <v-form ref="form" v-model="valid" @submit.prevent="register">
+            <v-form ref="form" v-model="valid" @submit.prevent="register" class="mt-4">
               <v-text-field
                 v-model="name"
                 :rules="nameRules"

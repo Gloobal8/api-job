@@ -115,8 +115,13 @@ export default createStore({
       try {
         commit("SET_LOADING", true);
         const response = await axios.post("/auth/login", credentials);
-        commit("SET_USER", response.data.user);
-        commit("SET_TOKEN", response.data.token);
+
+        console.log({
+          response,
+          archive: 'store/index.js'
+        })
+        commit("SET_USER", response.data?.user);
+        commit("SET_TOKEN", response.data?.token);
         commit("SET_ERROR", null);
         return response;
       } catch (error) {

@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
 };
 
 // User login
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
   const { email, password } = req.body;
   
   // Validate input
@@ -41,8 +41,16 @@ exports.login = (req, res) => {
     return res.status(400).json({ message: 'Email and password are required' });
   }
   
-  // Find user by email
-  const user = db.get('users').find({ email }).value();
+  // Login Model
+  const data = await Auth.login({ email, password });
+  console.log({
+    archive: 'authController.js',
+    data
+  })
+  res.status(201).json(data);
+  return console.log(data)
+
+  // const user = db.get('users').find({ email }).value();
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
   }
@@ -136,7 +144,7 @@ exports.resendVerification = async (req, res) => {
     archive: 'authController.js',
     email
   })
-  
+
   const data = await User.resendVerification(email)
 
   res.status(201).json(data);

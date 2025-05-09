@@ -18,7 +18,7 @@
               {{ error }}
             </v-alert>
             
-            <v-form ref="form" v-model="valid" @submit.prevent="login">
+            <v-form ref="form" v-model="valid" @submit.prevent="login" class="mt-4">
               <v-text-field
                 v-model="email"
                 :rules="emailRules"
@@ -95,10 +95,20 @@ export default {
           email: this.email,
           password: this.password
         })
-          .then(() => {
+          .then((res) => {
             // Redirect to dashboard or previous page
-            const redirectPath = this.$route.query.redirect || '/dashboard';
-            this.$router.push(redirectPath);
+            if (res.data.status) {
+              this.error = null;
+              const redirectPath = this.$route.query.redirect || '/dashboard';
+              this.$router.push(redirectPath);
+            } else {
+              this.error = res.data.message
+            }
+            
+            console.log({
+              archive: 'LoginView.vue',
+              data: res,
+            })
           })
           .catch(error => {
             this.error = error.response?.data?.message || 'Login failed. Please try again.';
