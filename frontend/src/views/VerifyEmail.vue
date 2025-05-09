@@ -4,7 +4,7 @@
         <v-col cols="12" md="6">
           <v-card class="mx-auto mt-5">
             <v-card-title class="text-h5 text-center">
-              Verificación de Email
+              {{ titleVerification }}
             </v-card-title>
   
             <v-card-text class="text-center">
@@ -35,7 +35,7 @@
                 class="mb-2"
                 block
               >
-                Iniciar sesión
+                Log In
               </v-btn>
   
               <v-btn
@@ -46,11 +46,11 @@
                 class="mb-2"
                 block
               >
-                Reenviar email de verificación
+                Resend verification email
               </v-btn>
   
               <v-btn color="primary" variant="text" to="/" class="mt-4">
-                Volver a la página principal
+                Return to the main page
               </v-btn>
             </v-card-text>
           </v-card>
@@ -69,39 +69,80 @@
         loading: true,
         verified: false,
         resending: false,
-        statusMessage: "Verificando tu email...",
-        statusDescription: "Estamos procesando tu solicitud de verificación.",
+        statusMessage: "Verifying your email...",
+        statusDescription: "We are processing your verification request..",
         errorType: "",
         userEmail: "",
+        titleVerification: 'Email verification'
       };
     },
     async mounted() {
         const token = this.$route.query.token;
+        const email = this.$route.query.to;
+        console.log({ token, email })
         if (!token) {
-            this.handleError("Token de verificación no proporcionado.", "missing");
+            this.handleError("Verification token not provided. Check your inbox again.", "missing");
             return;
         }
-
+        if (!email) {
+            this.handleError("We can't find your email. Please try to register again", "missing");
+            return;
+        }
         try {
-            const response = await this.$store.dispatch("verifyEmail", {token});
-            // Handle successful verification (e.g., show a success message)
-            console.log(response);
+          const response = await this.$store.dispatch("verifyEmail", {token});
+          if (response.data.status) {
+            this.loading = false
+            this.verified = true
+            this.statusMessage = response.data.message;
+            this.statusDescription = 'Verification process completed';
+          } else {
+            this.statusMessage = response.data.message;
+            if (response.data?.type === 'expired') {
+              this.resendVerification()
+              this.loading = false
+              this.statusDescription = "We will send a new verification link to your email.";
+            }
+          }
+          console.log({
+            view: 'VerifyEmail.vue',
+            response
+          });
         } catch (error) {
             // Handle error (e.g., show an error message)
             console.error(error);
         }
-  
-     
     },
     methods: {
       handleError(message, type) {
         this.loading = false;
         this.verified = false;
-        this.statusMessage = "Verificación fallida";
+        this.statusMessage = "Validation failed";
         this.statusDescription = message;
         this.errorType = type;
       },
+
       async resendVerification() {
+        setTimeout(() => {
+          this.loading = true
+          this.titleVerification = 'Sending mail...'
+        }, 1000);
+        const email = this.$route.query.to;
+
+        const response = await axios.post("/auth/resend-verification", { email });
+
+        if (response.data.status) {
+          this.titleVerification = 'Check your inbox'
+          this.statusMessage = response.data.message
+          this.statusDescription = 'Click the "Confirm Email" link to complete your registration.'
+        } else {
+          this.titleVerification = 'Ooops...'
+          this.statusMessage = 'The email could not be sent. Please try to register again.'
+          this.loading = false
+          this.titleVerification = response.data.message
+        }
+        
+        return console.log('resend email...')
+
         if (!this.userEmail) {
           this.statusDescription =
             "No podemos reenviar el email porque no conocemos tu dirección de correo. Por favor, intenta registrarte nuevamente.";

@@ -17,13 +17,6 @@
             >
               {{ error }}
             </v-alert>
-            <v-alert
-              v-if="success"
-              type="success"
-              dismissible
-            >
-              {{ success }}
-            </v-alert>
             
             <v-form ref="form" v-model="valid" @submit.prevent="register">
               <v-text-field
@@ -105,17 +98,15 @@
     <v-dialog v-model="showSuccessDialog" max-width="500" persistent>
       <v-card>
         <v-card-title class="text-h5 bg-success text-white">
-          Registro exitoso
+          Successful registration
         </v-card-title>
         <v-card-text class="pt-4">
-          <p>¡Tu cuenta ha sido creada con éxito!</p>
+          <p>Your account has been created successfully!</p>
           <p>
-            Hemos enviado un correo de verificación a
+            We've sent a verification email to
             <strong>{{ email }}</strong
-            >. Por favor, revisa tu bandeja de entrada y haz clic en el enlace
-            de verificación para activar tu cuenta.
+            >. Please check your inbox and click the verification link to activate your account.
           </p>
-
           <div v-if="emailPreviewUrl" class="mt-4">
             <p class="text-caption">
               (Modo desarrollo:
@@ -128,7 +119,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" @click="goToLogin">
-            Ir a inicio de sesión
+            Go to login
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -194,6 +185,7 @@ export default {
             // Show success message and redirect to login
             this.success = 'User registered successfully';
             this.showSuccessDialog = true;
+            localStorage.setItem('emailTemporary', this.email) 
           })
           .catch(error => {
             this.error = error.response?.data?.message || 'Registration failed. Please try again.';

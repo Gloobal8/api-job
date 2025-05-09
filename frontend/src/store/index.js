@@ -148,14 +148,9 @@ export default createStore({
     async verifyEmail({ commit }, token) {
       try {
           commit("SET_LOADING", true);
-          // Make a request to the /verify-email endpoint with the token
-          console.log({
-            archive: 'store',
-            token
-          })
           const response = await axios.post("/auth/verify-email", token);
           commit("SET_ERROR", null);
-          return response; // Return the response for further handling if needed
+          return response;
       } catch (error) {
           commit(
               "SET_ERROR",
