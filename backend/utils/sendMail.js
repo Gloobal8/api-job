@@ -22,14 +22,13 @@ class SendMail {
 
         const token = jwt.sign({ to }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+        const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}&to=${encodeURIComponent(to)}`;
 
         let mailOptions = {
             from: `"Gloobal Jobs" <${process.env.EMAIL}>`,
             to: to, 
             subject: subject,
             html: TemplateEmail.template(name, verificationLink),
-            // text: 'Hello text'
         };
 
         try {

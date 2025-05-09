@@ -102,25 +102,48 @@ exports.verifyEmail = (req, res) => {
 
   jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
     console.log('Test2')
-
     if (err) {
-        return res.status(400).send('Invalid or expired verification token.');
+      console.log({
+        status: 'expired',
+        archive: 'authController.js'
+      })
+      return res.status(201).send({
+        type: 'expired',
+        message: 'Invalid or expired verification token.',
+        status: false
+      });
     }
 
     const email = decoded.to;
-
     console.log({
       archive: 'authController.js',
       data: 'Verification',
       email
     })
-    const userModel = await User.getByEmail('codezardi@gmail.com')
+    const userModel = await User.verifyEmail(email)
 
-    res.status(userModel.status ? 201 : 400).json(userModel);
+    res.status(201).json(userModel);
 
     console.log({
       archive: 'authController.js',
       data: userModel
     })
   });
+}
+exports.resendVerification = async (req, res) => {
+  const email = req.body.email;
+  console.log({
+    archive: 'authController.js',
+    email
+  })
+  
+  const data = await User.resendVerification(email)
+
+  res.status(201).json(data);
+
+  console.log({
+    archive: 'authController.js',
+    data
+  })
+
 }
