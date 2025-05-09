@@ -33,8 +33,8 @@
                 :rules="passwordRules"
                 label="Password"
                 prepend-icon="mdi-lock"
-                :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append="showPassword = !showPassword"
+                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                @click:append-inner="showPassword = !showPassword"
                 :type="showPassword ? 'text' : 'password'"
                 required
               ></v-text-field>
