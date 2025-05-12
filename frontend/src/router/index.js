@@ -220,6 +220,7 @@ const routes = [
     path: "/messages",
     name: "Messages",
     component: () => import("../views/MessagesView.vue"),
+    meta: { requiresAuth: true },
   },
 
   // Admin routes (optional)
