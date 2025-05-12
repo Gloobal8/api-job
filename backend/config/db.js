@@ -1,19 +1,21 @@
 const { MongoClient } = require('mongodb');
 
-// Reemplaza la URI de conexión con la tuya
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_SERVER}/
-`;
+const URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_SERVER}/`;
 
-const client = new MongoClient(uri);
-
-async function run() {
-    try {
-        await client.connect();
-        console.log('Conexión exitosa')
-    } catch (error) {
-        console.error(error);
-    } finally {
-        await client.close();
+class dbClient {
+    constructor() {
+        this.client = new MongoClient(URI);
+        this.connectDB();
+    }
+    async connectDB() {
+        try {
+            await this.client.connect()
+            this.db = this.client.db('Cluster0');
+            console.log('Conexión exitosa')
+        } catch (error) {
+            console.log(error)
+        }
+        
     }
 }
-run().catch(console.dir);
+module.exports = new dbClient();

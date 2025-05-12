@@ -18,7 +18,7 @@
               {{ error }}
             </v-alert>
             
-            <v-form ref="form" v-model="valid" @submit.prevent="login">
+            <v-form ref="form" v-model="valid" @submit.prevent="login" class="mt-4">
               <v-text-field
                 v-model="email"
                 :rules="emailRules"
@@ -33,16 +33,15 @@
                 :rules="passwordRules"
                 label="Password"
                 prepend-icon="mdi-lock"
-                :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append="showPassword = !showPassword"
+                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                @click:append-inner="showPassword = !showPassword"
                 :type="showPassword ? 'text' : 'password'"
                 required
               ></v-text-field>
             </v-form>
           </v-card-text>
           
-          <v-card-actions>
-            <v-spacer></v-spacer>
+          <v-card-actions class="d-flex justify-center">
             <v-btn
               color="primary"
               :loading="loading"
@@ -96,10 +95,21 @@ export default {
           email: this.email,
           password: this.password
         })
-          .then(() => {
+          .then((res) => {
             // Redirect to dashboard or previous page
-            const redirectPath = this.$route.query.redirect || '/dashboard';
-            this.$router.push(redirectPath);
+            if (res.data.status) {
+              console.log('Puedes entrar al dashboard')
+              const redirectPath = this.$route.query.redirect || '/dashboard';
+              console.log(this.$route.query.redirect);
+              this.$router.push('/dashboard');
+            } else {
+              this.error = res.data.message
+            }
+            
+            console.log({
+              archive: 'LoginView.vue',
+              res,
+            })
           })
           .catch(error => {
             this.error = error.response?.data?.message || 'Login failed. Please try again.';
