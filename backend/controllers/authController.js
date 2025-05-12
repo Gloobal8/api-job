@@ -109,7 +109,9 @@ exports.verifyEmail = (req, res) => {
   })
 
   jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-    console.log('Test2')
+    console.log({
+      error: err
+    })
     if (err) {
       console.log({
         status: 'expired',
