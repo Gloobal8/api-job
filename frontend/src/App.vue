@@ -175,7 +175,11 @@ export default {
   }),
   computed: {
     isLoggedIn() {
-      return this.$store.getters.isLoggedIn;
+      console.log({
+        archive: 'App.vue',
+        isLoggedIn: this.$store.getters.isAuthenticated
+      })
+      return this.$store.getters.isAuthenticated;
     },
   },
   methods: {

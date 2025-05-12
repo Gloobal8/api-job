@@ -29,6 +29,11 @@ import TestimonialsAdmin from "@/views/admin/TestimonialsAdmin.vue";
 import PackagesView from "../views/admin/PackagesView.vue";
 import VerifyEmail from "../views/VerifyEmail.vue";
 
+console.log({
+  archive: 'router/index.js',
+  test: store.getters.isAuthenticated
+})
+
 const routes = [
   {
     path: "/",
@@ -286,26 +291,44 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  // Check if the route requires authentication
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!store.getters.isAuthenticated) {
-      next({
-        path: "/login",
-        query: { redirect: to.fullPath },
-      });
-    } else if (to.matched.some((record) => record.meta.requiresAdmin)) {
-      // Check if user is admin
-      const user = store.state.auth.user;
-      if (user && user.role === "admin") {
-        next();
+      console.log(`Authenticated: ${store.getters.isAuthenticated}`);
+      
+      if (!store.getters.isAuthenticated) {
+          console.log('No puedes entrar');
+          next({
+              path: "/login",
+              query: { redirect: to.fullPath },
+          });
+      } else if (to.matched.some((record) => record.meta.requiresAdmin)) {
+          // Check if user is admin
+          console.log('Admin?');
+          const user = store.state.auth.user;
+          if (user && user.role === "admin") {
+              next(); // Proceed to the route if user is admin
+          } else {
+              next({ path: "/dashboard" }); // Redirect to dashboard if not admin
+          }
       } else {
-        next({ path: "/dashboard" });
+          next(); // Proceed to the route if authenticated
       }
-    } else {
-      next();
-    }
   } else {
-    next();
+      // Check if the user is authenticated
+      if (store.getters.isAuthenticated) {
+          // If authenticated, redirect from login or register
+          if (to.path === '/login' || to.path === '/register') {
+              console.log('Ya estás autenticado, redirigiendo a dashboard');
+              next({ path: '/dashboard' }); // Redirect to dashboard if authenticated
+          } else {
+              next(); // Proceed to other routes
+          }
+      } else {
+          // If not authenticated, allow access to login and register
+          next(); // Proceed to login or register
+      }
   }
 });
+
 
 export default router;

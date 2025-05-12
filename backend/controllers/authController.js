@@ -49,33 +49,6 @@ exports.login = async (req, res) => {
   })
   res.status(201).json(data);
   return console.log(data)
-
-  // const user = db.get('users').find({ email }).value();
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
-  
-  // Check password
-  const passwordIsValid = bcrypt.compareSync(password, user.password);
-  if (!passwordIsValid) {
-    return res.status(401).json({ message: 'Invalid password' });
-  }
-  
-  // Generate JWT token
-  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-    expiresIn: parseInt(process.env.JWT_EXPIRATION) // 24 hours
-  });
-  
-  // Return user info and token
-  res.status(200).json({
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    },
-    token
-  });
 };
 
 // Get current user info

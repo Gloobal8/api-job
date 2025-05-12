@@ -98,16 +98,17 @@ export default {
           .then((res) => {
             // Redirect to dashboard or previous page
             if (res.data.status) {
-              this.error = null;
+              console.log('Puedes entrar al dashboard')
               const redirectPath = this.$route.query.redirect || '/dashboard';
-              this.$router.push(redirectPath);
+              console.log(this.$route.query.redirect);
+              this.$router.push('/dashboard');
             } else {
               this.error = res.data.message
             }
             
             console.log({
               archive: 'LoginView.vue',
-              data: res,
+              res,
             })
           })
           .catch(error => {

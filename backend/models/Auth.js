@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs/dist/bcrypt');
 const dbClient = require('../config/db')
 const SendMail = require('../utils/sendMail')
+const jwt = require('jsonwebtoken')
 
 class Auth {
     static async register(user) {
@@ -55,11 +56,16 @@ class Auth {
             if (!existingUser) {
                 return { status: false, message: 'User not found.' };
             }
-            
+
             const passwordIsValid = bcrypt.compareSync(user.password, existingUser.password);
             if (!passwordIsValid) {
                 return { status: false, message: 'Invalid password' }
             }
+
+            if (!existingUser.isAuthenticated) {
+                return { status: false, message: 'Unauthenticated user, please check your inbox.' };
+            }
+
             const token = jwt.sign({ id: existingUser.id }, process.env.JWT_SECRET, {
                 expiresIn: '24h'
             });
