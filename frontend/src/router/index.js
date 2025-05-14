@@ -15,7 +15,7 @@ import InvoicesView from "../views/admin/InvoicesView.vue";
 import InvoiceDetailView from "../views/InvoiceDetailView.vue";
 import CustomFieldsView from "@/views/CustomFieldsView.vue";
 import CreateJobView from "@/views/jobs/CreateJobView.vue";
-import EditJobView from "@/views/jobs/EditJobView.vue";
+//import EditJobView from "@/views/jobs/EditJobView.vue";
 import LanguagesView from "@/views/LanguagesView.vue";
 import TestimonialsView from "@/views/TestimonialsView.vue";
 import BlogList from "@/views/blog/BlogList.vue";
@@ -65,8 +65,8 @@ const routes = [
   },
   {
     path: "/jobs/:jobId/edit",
-    name: "EditJob",
-    component: EditJobView,
+    name: "edit-job",
+    component: () => import("../views/jobs/EditJobView.vue"),
     props: true,
     meta: {
       requiresAuth: true,

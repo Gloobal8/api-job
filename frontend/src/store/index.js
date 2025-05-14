@@ -6,6 +6,7 @@ import testimonials from "./modules/testimonials";
 import reviews from "./modules/reviews";
 import blog from "./modules/blog";
 import snackbar from "./modules/snackbar";
+import jobs from "./modules/jobs";
 
 export default createStore({
   state: {
@@ -30,6 +31,7 @@ export default createStore({
     reviews,
     blog,
     snackbar,
+    jobs,
     // Otros módulos...
   },
   mutations: {

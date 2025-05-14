@@ -280,7 +280,7 @@ export default {
       relatedPosts: [],
       authorAvatar: null,
       authorBio: null,
-      breadcrumbs: [
+      initialBreadcrumbs: [
         {
           title: "Home",
           disabled: false,
