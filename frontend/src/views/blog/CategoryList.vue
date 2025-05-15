@@ -21,12 +21,17 @@
             </template>
 
             <template v-slot:item.actions="{ item }">
-              <v-btn small icon color="primary" @click="editCategory(item)">
+              <v-btn
+                icon
+                size="small"
+                color="primary"
+                @click="editCategory(item)"
+              >
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
               <v-btn
-                small
                 icon
+                size="small"
                 color="error"
                 @click="confirmDelete(item)"
                 :disabled="getPostCount(item.id) > 0"
@@ -50,7 +55,8 @@
                 label="Category Name"
                 :rules="nameRules"
                 required
-                outlined
+                variant="outlined"
+                density="comfortable"
               ></v-text-field>
 
               <v-text-field
@@ -58,13 +64,14 @@
                 label="URL Slug"
                 hint="Leave blank to generate from name"
                 persistent-hint
-                outlined
+                variant="outlined"
+                density="comfortable"
               ></v-text-field>
 
               <v-textarea
                 v-model="category.description"
                 label="Description"
-                outlined
+                variant="outlined"
                 rows="3"
               ></v-textarea>
 
@@ -72,14 +79,15 @@
                 v-model="category.parentId"
                 :items="parentOptions"
                 label="Parent Category"
-                outlined
+                variant="outlined"
+                density="comfortable"
                 clearable
               ></v-select>
             </v-form>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="resetForm"> Cancel </v-btn>
+            <v-btn variant="text" @click="resetForm"> Cancel </v-btn>
             <v-btn
               color="primary"
               :disabled="!valid"
@@ -104,8 +112,13 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="deleteDialog = false"> Cancel </v-btn>
-          <v-btn color="error" text @click="deleteCategory" :loading="deleting">
+          <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
+          <v-btn
+            color="error"
+            variant="text"
+            @click="deleteCategory"
+            :loading="deleting"
+          >
             Delete
           </v-btn>
         </v-card-actions>
@@ -114,153 +127,156 @@
   </v-container>
 </template>
 
-<script>
-import { mapState, mapActions } from "vuex";
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useStore } from "vuex";
 
-export default {
-  name: "CategoryList",
-  data() {
-    return {
-      valid: false,
-      editMode: false,
-      saving: false,
-      deleting: false,
-      deleteDialog: false,
-      categoryToDelete: null,
-      category: this.getEmptyCategory(),
-      headers: [
-        { title: "Name", value: "name" },
-        { title: "Slug", value: "slug" },
-        { title: "Posts", value: "postCount", sortable: false },
-        {
-          title: "Actions",
-          value: "actions",
-          sortable: false,
-          align: "center",
-        },
-      ],
-      nameRules: [
-        (v) => !!v || "Name is required",
-        (v) => (v && v.length <= 50) || "Name must be less than 50 characters",
-      ],
-    };
+// Setup
+const store = useStore();
+const form = ref(null);
+const valid = ref(false);
+const editMode = ref(false);
+const saving = ref(false);
+const deleting = ref(false);
+const deleteDialog = ref(false);
+const categoryToDelete = ref(null);
+
+// Estado local
+const category = ref(getEmptyCategory());
+
+// Headers para la tabla
+const headers = [
+  { title: "Name", key: "name" },
+  { title: "Slug", key: "slug" },
+  { title: "Posts", key: "postCount", sortable: false },
+  {
+    title: "Actions",
+    key: "actions",
+    sortable: false,
+    align: "center",
   },
-  computed: {
-    ...mapState({
-      categories: (state) => state.blog.categories,
-      posts: (state) => state.blog.posts,
-      loading: (state) => state.blog.loading,
-    }),
-    parentOptions() {
-      // Filter out the current category being edited to prevent circular references
-      return this.categories
-        .filter((cat) => !this.editMode || cat.id !== this.category.id)
-        .map((cat) => ({
-          text: cat.name,
-          value: cat.id,
-        }));
-    },
-  },
-  created() {
-    this.fetchCategories();
-    this.fetchPosts({ limit: 1000 }); // Get all posts for counting
-  },
-  methods: {
-    ...mapActions({
-      fetchCategories: "blog/fetchCategories",
-      fetchPosts: "blog/fetchPosts",
-      createCategory: "blog/createCategory",
-      updateCategory: "blog/updateCategory",
-      deleteCategoryAction: "blog/deleteCategory",
-    }),
-    getEmptyCategory() {
-      return {
-        name: "",
-        slug: "",
-        description: "",
-        parentId: null,
-      };
-    },
-    getPostCount(categoryId) {
-      return this.posts.filter((post) => post.categoryId === categoryId).length;
-    },
-    editCategory(category) {
-      this.editMode = true;
-      this.category = { ...category };
-    },
-    confirmDelete(category) {
-      if (this.getPostCount(category.id) > 0) {
-        this.$store.dispatch("snackbar/showSnackbar", {
-          text: "Cannot delete a category that has posts",
-          color: "error",
-        });
-        return;
-      }
+];
 
-      this.categoryToDelete = category;
-      this.deleteDialog = true;
-    },
-    async saveCategory() {
-      if (!this.$refs.form.validate()) return;
+// Reglas de validación
+const nameRules = [
+  (v) => !!v || "Name is required",
+  (v) => (v && v.length <= 50) || "Name must be less than 50 characters",
+];
 
-      try {
-        this.saving = true;
+// Propiedades computadas
+const categories = computed(() => store.state.blog.categories || []);
+const posts = computed(() => store.state.blog.posts || []);
+const loading = computed(() => store.state.blog.loading);
 
-        if (this.editMode) {
-          await this.updateCategory({
-            id: this.category.id,
-            categoryData: this.category,
-          });
-          this.$store.dispatch("snackbar/showSnackbar", {
-            text: "Category updated successfully",
-            color: "success",
-          });
-        } else {
-          await this.createCategory(this.category);
-          this.$store.dispatch("snackbar/showSnackbar", {
-            text: "Category created successfully",
-            color: "success",
-          });
-        }
+const parentOptions = computed(() => {
+  // Filtrar la categoría actual para evitar referencias circulares
+  return categories.value
+    .filter((cat) => !editMode.value || cat.id !== category.value.id)
+    .map((cat) => ({
+      title: cat.name,
+      value: cat.id,
+    }));
+});
 
-        this.resetForm();
-      } catch (error) {
-        console.error("Error saving category:", error);
-        this.$store.dispatch("snackbar/showSnackbar", {
-          text: error.response?.data?.message || "Error saving category",
-          color: "error",
-        });
-      } finally {
-        this.saving = false;
-      }
-    },
-    async deleteCategory() {
-      try {
-        this.deleting = true;
-        await this.deleteCategoryAction(this.categoryToDelete.id);
-        this.$store.dispatch("snackbar/showSnackbar", {
-          text: "Category deleted successfully",
-          color: "success",
-        });
-        this.deleteDialog = false;
-        this.categoryToDelete = null;
-      } catch (error) {
-        console.error("Error deleting category:", error);
-        this.$store.dispatch("snackbar/showSnackbar", {
-          text: error.response?.data?.message || "Error deleting category",
-          color: "error",
-        });
-      } finally {
-        this.deleting = false;
-      }
-    },
-    resetForm() {
-      this.editMode = false;
-      this.category = this.getEmptyCategory();
-      if (this.$refs.form) {
-        this.$refs.form.resetValidation();
-      }
-    },
-  },
-};
+// Métodos
+function getEmptyCategory() {
+  return {
+    name: "",
+    slug: "",
+    description: "",
+    parentId: null,
+  };
+}
+
+function getPostCount(categoryId) {
+  return posts.value.filter((post) => post.categoryId === categoryId).length;
+}
+
+function editCategory(cat) {
+  editMode.value = true;
+  category.value = { ...cat };
+}
+
+function confirmDelete(cat) {
+  if (getPostCount(cat.id) > 0) {
+    store.dispatch("snackbar/showSnackbar", {
+      text: "Cannot delete a category that has posts",
+      color: "error",
+    });
+    return;
+  }
+
+  categoryToDelete.value = cat;
+  deleteDialog.value = true;
+}
+
+async function saveCategory() {
+  if (!form.value.validate()) return;
+
+  try {
+    saving.value = true;
+
+    if (editMode.value) {
+      await store.dispatch("blog/updateCategory", {
+        id: category.value.id,
+        categoryData: category.value,
+      });
+      store.dispatch("snackbar/showSnackbar", {
+        text: "Category updated successfully",
+        color: "success",
+      });
+    } else {
+      await store.dispatch("blog/createCategory", category.value);
+      store.dispatch("snackbar/showSnackbar", {
+        text: "Category created successfully",
+        color: "success",
+      });
+    }
+
+    resetForm();
+  } catch (error) {
+    console.error("Error saving category:", error);
+    store.dispatch("snackbar/showSnackbar", {
+      text: error.response?.data?.message || "Error saving category",
+      color: "error",
+    });
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function deleteCategory() {
+  try {
+    deleting.value = true;
+    await store.dispatch("blog/deleteCategory", categoryToDelete.value.id);
+    store.dispatch("snackbar/showSnackbar", {
+      text: "Category deleted successfully",
+      color: "success",
+    });
+    deleteDialog.value = false;
+    categoryToDelete.value = null;
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    store.dispatch("snackbar/showSnackbar", {
+      text: error.response?.data?.message || "Error deleting category",
+      color: "error",
+    });
+  } finally {
+    deleting.value = false;
+  }
+}
+
+function resetForm() {
+  editMode.value = false;
+  category.value = getEmptyCategory();
+  if (form.value) {
+    form.value.resetValidation();
+  }
+}
+
+// Ciclo de vida
+onMounted(async () => {
+  await store.dispatch("blog/fetchCategories");
+  await store.dispatch("blog/fetchPosts", { limit: 1000 }); // Obtener todos los posts para contar
+});
 </script>
