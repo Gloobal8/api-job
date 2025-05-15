@@ -1,47 +1,56 @@
-const nodemailer = require("nodemailer");
+let nodemailer;
+try {
+  nodemailer = require("nodemailer");
+} catch (error) {
+  console.error("Error loading nodemailer:", error);
+  throw new Error("Failed to load email service dependencies");
+}
 const TemplateEmail = require("./templateEmail");
-const jwt = require('jsonwebtoken');
-
+const jwt = require("jsonwebtoken");
 class SendMail {
-    static async sendMail(to, subject, name) {
-        let transporter = nodemailer.createTransport({
-            host: process.env.SMTP,
-            port: process.env.SMTP_PORT, 
-            secure: true, 
-            auth: {
-                user: process.env.EMAIL,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
-
-        console.log({
-            to,
-            subject,
-            name
-        })
-
-        const token = jwt.sign({ to }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}&to=${encodeURIComponent(to)}`;
-
-        let mailOptions = {
-            from: `"Gloobal Jobs" <${process.env.EMAIL}>`,
-            to: to, 
-            subject: subject,
-            html: TemplateEmail.template(name, verificationLink),
-        };
-
-        try {
-            let info = await transporter.sendMail(mailOptions);
-            console.log({
-                verificationLink,
-                info
-            })
-            console.log('Correo enviado: %s', info.messageId);
-            return info.messageId
-        } catch (error) {
-            console.error('Error al enviar el correo: ', error);
-        }
+  static async sendMail(to, subject, name) {
+    try {
+      let transporter = nodemailer.createTransport({
+        host: process.env.SMTP,
+        port: process.env.SMTP_PORT,
+        secure: true,
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+      // Validate email configuration
+      await transporter.verify().catch((error) => {
+        throw new Error(`Email configuration error: ${error.message}`);
+      });
+      console.log({
+        to,
+        subject,
+        name,
+      });
+      const token = jwt.sign({ to }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+      const verificationLink = `${
+        process.env.FRONTEND_URL
+      }/verify-email?token=${token}&to=${encodeURIComponent(to)}`;
+      let mailOptions = {
+        from: `"Gloobal Jobs" <${process.env.EMAIL}>`,
+        to: to,
+        subject: subject,
+        html: TemplateEmail.template(name, verificationLink),
+      };
+      const info = await transporter.sendMail(mailOptions);
+      console.log({
+        verificationLink,
+        info,
+      });
+      console.log("Correo enviado: %s", info.messageId);
+      return info.messageId;
+    } catch (error) {
+      console.error("Error en el servicio de correo:", error);
+      throw new Error(`Email service error: ${error.message}`);
     }
+  }
 }
 module.exports = SendMail;
