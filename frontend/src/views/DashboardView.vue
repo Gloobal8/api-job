@@ -320,6 +320,10 @@ export default {
   },
   computed: {
     user() {
+      console.log({
+        archive: 'DashboardView',
+        test: this.$store.getters.currentUser,
+      })
       return this.$store.getters.currentUser || {};
     },
     isEmployer() {

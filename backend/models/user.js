@@ -1,5 +1,6 @@
 // User model definition for candidate/employer profiles
-
+const dbClient = require("../config/db");
+const SendMail = require("../utils/sendMail");
 const userModel = {
   // Required fields
   id: String,
@@ -142,7 +143,96 @@ const validateUser = (user) => {
   return true;
 };
 
+
+class User {
+  static async verifyEmail(email) {
+    try {
+      const usersCollection = dbClient.db.collection('users');
+      const existingUser = await usersCollection.findOne({ email });
+
+      if (!existingUser) {
+        return {
+            status: false,
+            message: 'User not found!'
+        };
+      }
+      if (existingUser.isAuthenticated) {
+        return {
+          status: true,
+          message: 'This email has already been verified'
+        }
+      }
+
+      const result = await usersCollection.updateOne({ email },
+        { $set: { isAuthenticated: true } }
+      );
+
+      console.log({
+        type: 'result',
+        data: result
+      })
+
+      if (result.modifiedCount === 1) {
+        const updatedUser = await usersCollection.findOne({ email });
+        return {
+            status: true,
+            message: 'Verification Successfully!',
+        };
+      } else {
+        return {
+            status: false,
+            message: 'User could not be updated!'
+        };
+      }
+
+    } catch (error) {
+        console.error('Error fetching user by email:', error);
+        throw error; // Rethrow the error for further handling
+    }
+  }
+  static async getAllUsers() {
+    try {
+        const usersCollection = dbClient.db.collection('users');
+        const users = await usersCollection.find({}).toArray();
+        return users;
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+    }
+  }
+  static async resendVerification(email) {
+
+      const usersCollection = dbClient.db.collection('users');
+      const existingUser = await usersCollection.findOne({ email });
+
+      if (!existingUser) {
+        return {
+            status: false,
+            message: 'User not found!'
+        };
+      }
+
+      const sendmail = await SendMail.sendMail(email, 'Gloobal Jobs - Email verification', existingUser.name);
+      console.log({
+        archive: 'user.js',
+        data: sendmail
+      })
+      if (sendmail) {
+        return {
+          status: true,
+          message: 'Verification email sent successfully!'
+        }
+      } else {
+        return {
+          status: false,
+          message: 'Email forwarding!'
+        }
+      }
+  }
+}
+
 module.exports = {
   userModel,
   validateUser,
+  User
 };
