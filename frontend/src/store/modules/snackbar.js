@@ -8,7 +8,7 @@ export default {
   },
   mutations: {
     SET_SNACKBAR(state, payload) {
-      state.show = payload.show;
+      state.show = payload.show !== undefined ? payload.show : true;
       state.text = payload.text || "";
       state.color = payload.color || "success";
       state.timeout = payload.timeout || 3000;
