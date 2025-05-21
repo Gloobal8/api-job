@@ -41,7 +41,7 @@ const customFieldRoutes = require("./routes/customFields");
 const testimonialRoutes = require("./routes/testimonials");
 const reviewRoutes = require("./routes/reviews");
 const blogRoutes = require("./routes/blog");
-const rolsRoutes = require("./routes/rols");
+const rolsRoutes = require("./routes/admin");
 
 // Import new payment and package routes
 const packageRoutes = require("./routes/packages");

@@ -2,7 +2,7 @@
 
 exports.getAllRoles = async (req, res) => {
   try {
-    const roles = await Role.find(); // Fetch all roles from the database
+    // const roles = await Role.find(); // Fetch all roles from the database
     res.json({
         type: 'TEST',
         data: 'GET_ALL_ROLES'

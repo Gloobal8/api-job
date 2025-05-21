@@ -44,7 +44,11 @@ const actions = {
         data: roleData
     })
 
-    return await axios.post('/rols', roleData); // Replace with your API endpoint
+    const response = await axios.post('/rols/create', roleData); // Replace with your API endpoint
+    console.log({
+        tyep: 'response',
+        response
+    })
     // return dispatch('getAllRoles'); // Refresh the list after adding
   },
   async editRoleAction({ dispatch }, roleData) {
