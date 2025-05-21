@@ -29,11 +29,6 @@ import TestimonialsAdmin from "@/views/admin/TestimonialsAdmin.vue";
 import PackagesView from "../views/admin/PackagesView.vue";
 import VerifyEmail from "../views/VerifyEmail.vue";
 
-console.log({
-  archive: 'router/index.js',
-  test: store.getters.isAuthenticated
-})
-
 const routes = [
   {
     path: "/",
@@ -224,6 +219,11 @@ const routes = [
   },
 
   // Admin routes (optional)
+  {
+    path: "/admin",
+    name: "Admin Home",
+    component: () => import("../views/admin/Index.vue")
+  },
   {
     path: "/admin/packages",
     name: "AdminPackagesView",
