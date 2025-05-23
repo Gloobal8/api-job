@@ -3,62 +3,137 @@ import axios from 'axios';
 const state = {
   admins: [],
   roles: [],
+  loading: false,
+  error: null
 };
 
 const getters = {
   getAllAdmins: (state) => state.admins,
   getAllRoles: (state) => state.roles,
+  isLoading: (state) => state.loading,
+  getError: (state) => state.error
 };
 
 const actions = {
   // Admin actions
   async getAllAdmins({ commit }) {
-    const response = await axios.get('/api/admins'); // Replace with your API endpoint
-    commit('SET_ADMINS', response.data);
-    return response.data; // Return data to the caller
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.get('/api/admins');
+      commit('SET_ADMINS', response.data);
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al obtener administradores');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
   },
-  async addAdmin({ dispatch }, adminData) {
-    await axios.post('/api/admins', adminData); // Replace with your API endpoint
-    return dispatch('getAllAdmins'); // Refresh the list after adding
+
+  async addAdmin({ commit, dispatch }, adminData) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.post('/api/admins', adminData);
+      await dispatch('getAllAdmins');
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al crear administrador');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
   },
-  async editAdminAction({ dispatch }, adminData) {
-    await axios.put(`/api/admins/${adminData.id}`, adminData); // Replace with your API endpoint
-    return dispatch('getAllAdmins'); // Refresh the list after editing
+
+  async editAdminAction({ commit, dispatch }, adminData) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.put(`/api/admins/${adminData.id}`, adminData);
+      await dispatch('getAllAdmins');
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al actualizar administrador');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
   },
-  async deleteAdmin({ dispatch }, adminData) {
-    await axios.delete(`/api/admins/${adminData.id}`); // Replace with your API endpoint
-    return dispatch('getAllAdmins'); // Refresh the list after deleting
+
+  async deleteAdmin({ commit, dispatch }, adminData) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.delete(`/api/admins/${adminData.id}`);
+      await dispatch('getAllAdmins');
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al eliminar administrador');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
   },
 
   // Role actions
   async getAllRoles({ commit }) {
-    const response = await axios.get('/api/rols'); // Replace with your API endpoint
-    commit('SET_ROLES', response.data);
-    return response.data; // Return data to the caller
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.get('/rols/rols');
+      commit('SET_ROLES', response.data);
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al obtener roles');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
   },
-  async addRole({ dispatch }, roleData) {
 
-    console.log({
-        type: 'test',
-        archive: 'modules/admin.js',
-        data: roleData
-    })
+  async addRole({ commit, dispatch }, roleData) {
+    try {
+        
+      commit('SET_LOADING', true);
+      const response = await axios.post('/rols/rols/create', roleData);
+      await dispatch('getAllRoles');
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al crear rol');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
 
-    const response = await axios.post('/rols/create', roleData); // Replace with your API endpoint
-    console.log({
-        tyep: 'response',
-        response
-    })
-    // return dispatch('getAllRoles'); // Refresh the list after adding
+  async editRoleAction({ commit, dispatch }, roleData) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.put(`/rols/rols/${roleData._id}`, roleData);
+      await dispatch('getAllRoles');
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al actualizar rol');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
   },
-  async editRoleAction({ dispatch }, roleData) {
-    await axios.put(`/api/rols/${roleData.id}`, roleData); // Replace with your API endpoint
-    return dispatch('getAllRoles'); // Refresh the list after editing
+
+  async deleteRole({ commit, dispatch }, roleData) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.delete(`/rols/rols/${roleData._id}`);
+      await dispatch('getAllRoles');
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al eliminar rol');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
   },
-  async deleteRole({ dispatch }, roleData) {
-    await axios.delete(`/api/rols/${roleData.id}`); // Replace with your API endpoint
-    return dispatch('getAllRoles'); // Refresh the list after deleting
-  },
+
+  // Clear error action
+  clearError({ commit }) {
+    commit('SET_ERROR', null);
+  }
 };
 
 const mutations = {
@@ -68,11 +143,17 @@ const mutations = {
   SET_ROLES(state, roles) {
     state.roles = roles;
   },
+  SET_LOADING(state, loading) {
+    state.loading = loading;
+  },
+  SET_ERROR(state, error) {
+    state.error = error;
+  }
 };
 
 export default {
   state,
   getters,
   actions,
-  mutations,
+  mutations
 };
