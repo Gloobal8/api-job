@@ -28,7 +28,7 @@
       </template>
 
       <template v-slot:item.rol="{ item }">
-        {{ item.rol.role }}
+        {{ item.rol.nombreRol }}
       </template>
 
       <template v-slot:item.actions="{ item }">
@@ -94,9 +94,8 @@
                   <v-select
                     v-model="formData.rolId"
                     :items="roles"
-                    :return-object="false"
-                    dense
-                    outlined
+                    item-text="nombreRol"
+                    item-value="_id"
                     :rules="[rules.required]"
                     label="Rol*"
                     required
@@ -170,7 +169,7 @@
 import { mapState, mapActions } from 'vuex';
 
 export default {
-  name: 'SuperAdmin',
+  name: 'AdminsManager',
   data() {
     return {
       adminSearch: '',
@@ -190,7 +189,7 @@ export default {
         { text: 'Nombre', value: 'nombre', sortable: true },
         { text: 'Apellido', value: 'apellido', sortable: true },
         { text: 'Correo', value: 'correo', sortable: true },
-        { text: 'Rol', value: 'rolId', sortable: true },
+        { text: 'Rol', value: 'rol', sortable: true },
         { text: 'Acciones', value: 'actions', sortable: false, align: 'center' }
       ],
       rules: {
@@ -203,10 +202,7 @@ export default {
   computed: {
     ...mapState({
       admins: state => state.admin.admins,
-      roles: state => {
-        const rolesArray = state.admin.roles.map(rol => rol.nombreRol);
-        return rolesArray;
-      }
+      roles: state => state.admin.roles
     })
   },
   methods: {
@@ -240,11 +236,11 @@ export default {
     editAdmin(item) {
       this.isEdit = true;
       this.formData = { 
-        _id: item._id,
+        ...this.getEmptyFormData(),
         nombre: item.nombre,
         apellido: item.apellido,
         correo: item.correo,
-        rolId: item.rolId
+        rolId: item.rol._id
       };
       this.modal = true;
     },
@@ -269,7 +265,10 @@ export default {
       try {
         this.loading = true;
         if (this.isEdit) {
-          await this.editAdminAction(this.formData);
+          await this.editAdminAction({
+            ...this.formData,
+            _id: this.adminToDelete._id
+          });
           this.showMessage('Administrador actualizado exitosamente');
         } else {
           await this.addAdmin(this.formData);
@@ -322,4 +321,4 @@ export default {
 .v-data-table ::v-deep .v-data-table__wrapper {
   overflow-x: auto;
 }
-</style>
+</style> 

@@ -41,7 +41,7 @@ const customFieldRoutes = require("./routes/customFields");
 const testimonialRoutes = require("./routes/testimonials");
 const reviewRoutes = require("./routes/reviews");
 const blogRoutes = require("./routes/blog");
-const rolsRoutes = require("./routes/admin");
+const rolsAndAdminRoutes = require("./routes/admin");
 
 // Import new payment and package routes
 const packageRoutes = require("./routes/packages");
@@ -105,7 +105,8 @@ app.use("/api/custom-fields", customFieldRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/blog", blogRoutes);
-app.use("/api/rols", rolsRoutes);
+app.use("/api/rols", rolsAndAdminRoutes);
+app.use("/api/admins", rolsAndAdminRoutes);
 
 // New package and payment routes
 app.use("/api/packages", packageRoutes);

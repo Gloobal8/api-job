@@ -11,7 +11,13 @@ const getters = {
   getAllAdmins: (state) => state.admins,
   getAllRoles: (state) => state.roles,
   isLoading: (state) => state.loading,
-  getError: (state) => state.error
+  getError: (state) => state.error,
+  getAdminById: (state) => (id) => {
+    return state.admins.find(admin => admin._id === id);
+  },
+  getRoleById: (state) => (id) => {
+    return state.roles.find(role => role._id === id);
+  }
 };
 
 const actions = {
@@ -19,7 +25,11 @@ const actions = {
   async getAllAdmins({ commit }) {
     try {
       commit('SET_LOADING', true);
-      const response = await axios.get('/api/admins');
+      const response = await axios.get('/admins/admins');
+      console.log({
+        archive: 'frontend/src/store/modules/admin.js',
+        response: response.data
+      });
       commit('SET_ADMINS', response.data);
       return response.data;
     } catch (error) {
@@ -33,7 +43,7 @@ const actions = {
   async addAdmin({ commit, dispatch }, adminData) {
     try {
       commit('SET_LOADING', true);
-      const response = await axios.post('/api/admins', adminData);
+      const response = await axios.post('/admins/admins/create', adminData);
       await dispatch('getAllAdmins');
       return response.data;
     } catch (error) {
@@ -47,7 +57,7 @@ const actions = {
   async editAdminAction({ commit, dispatch }, adminData) {
     try {
       commit('SET_LOADING', true);
-      const response = await axios.put(`/api/admins/${adminData.id}`, adminData);
+      const response = await axios.put(`/admins/admins/${adminData._id}`, adminData);
       await dispatch('getAllAdmins');
       return response.data;
     } catch (error) {
@@ -61,7 +71,7 @@ const actions = {
   async deleteAdmin({ commit, dispatch }, adminData) {
     try {
       commit('SET_LOADING', true);
-      const response = await axios.delete(`/api/admins/${adminData.id}`);
+      const response = await axios.delete(`/admins/admins/${adminData._id}`);
       await dispatch('getAllAdmins');
       return response.data;
     } catch (error) {
@@ -89,7 +99,6 @@ const actions = {
 
   async addRole({ commit, dispatch }, roleData) {
     try {
-        
       commit('SET_LOADING', true);
       const response = await axios.post('/rols/rols/create', roleData);
       await dispatch('getAllRoles');

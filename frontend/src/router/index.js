@@ -28,6 +28,7 @@ import CouponsView from "../views/admin/CouponsView.vue";
 import TestimonialsAdmin from "@/views/admin/TestimonialsAdmin.vue";
 import PackagesView from "../views/admin/PackagesView.vue";
 import VerifyEmail from "../views/VerifyEmail.vue";
+import AdminsView from "@/components/admin/Admins.vue";
 
 const routes = [
   {
@@ -246,6 +247,15 @@ const routes = [
     path: "/admin/testimonials",
     name: "TestimonialsAdmin",
     component: TestimonialsAdmin,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
+  },
+  {
+    path: "/admin/administrators",
+    name: "AdminsManager",
+    component: AdminsView,
     meta: {
       requiresAuth: true,
       requiresAdmin: true,
