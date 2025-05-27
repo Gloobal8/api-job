@@ -5,6 +5,7 @@
       <v-tab value="admins">Administradores</v-tab>
       <v-tab value="rols">Roles</v-tab>
       <v-tab value="permissions">Permisos</v-tab>
+      <v-tab value="modules">Módulos</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab">
       <!-- Administradores Tab -->
@@ -19,6 +20,10 @@
       <v-tab-item v-if="tab == 'permissions'">
         <Permissions />
       </v-tab-item>
+      <!-- Módulos Tab -->
+      <v-tab-item v-if="tab == 'modules'">
+        <Modules />
+      </v-tab-item>
     </v-tabs-items>
   </v-container>
 </template>
@@ -27,11 +32,13 @@
 import SuperAdmin from '@/components/admin/SuperAdmin.vue';
 import Rols from '@/components/admin/Rols.vue';
 import Permissions from '@/components/admin/Permissions.vue';
+import Modules from '@/components/admin/Modules.vue';
 export default {
   components: {
     SuperAdmin,
     Rols,
-    Permissions
+    Permissions,
+    Modules
   },
   data() {
     return {

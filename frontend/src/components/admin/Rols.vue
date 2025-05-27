@@ -52,7 +52,7 @@
     </v-data-table>
 
     <!-- Dialog para crear/editar rol -->
-    <v-dialog v-model="modal" max-width="600px" persistent>
+    <v-dialog v-model="modal" max-width="600px">
       <v-card>
         <v-card-title>
           <span class="text-h5">{{ isEdit ? 'Editar Rol' : 'Crear Nuevo Rol' }}</span>

@@ -56,7 +56,7 @@
     </v-data-table>
 
     <!-- Dialog para crear/editar administrador -->
-    <v-dialog v-model="modal" max-width="600px" persistent>
+    <v-dialog v-model="modal" max-width="600px">
       <v-card>
         <v-card-title>
           <span class="text-h5">{{ isEdit ? 'Editar Administrador' : 'Crear Nuevo Administrador' }}</span>

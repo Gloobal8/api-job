@@ -8,11 +8,13 @@ vue
       class="elevation-1"
     >
       <template v-slot:item.permissions="{ item }">
-        <v-checkbox v-model="item.permissions.view" label="View"></v-checkbox>
-        <v-checkbox v-model="item.permissions.add" label="Add"></v-checkbox>
-        <v-checkbox v-model="item.permissions.edit" label="Edit"></v-checkbox>
-        <v-checkbox v-model="item.permissions.delete" label="Delete"></v-checkbox>
-        <v-checkbox v-model="item.permissions.all" label="All"></v-checkbox>
+        <div class="flex">
+          <v-checkbox v-model="item.permissions.view" label="View"></v-checkbox>
+          <v-checkbox v-model="item.permissions.add" label="Add"></v-checkbox>
+          <v-checkbox v-model="item.permissions.edit" label="Edit"></v-checkbox>
+          <v-checkbox v-model="item.permissions.delete" label="Delete"></v-checkbox>
+          <v-checkbox v-model="item.permissions.all" label="All"></v-checkbox>
+        </div>
       </template>
     </v-data-table>
   </v-card>
