@@ -4,17 +4,6 @@
       <v-card-title>
         Módulos
         <v-spacer></v-spacer>
-        <v-text-field
-          v-model="searchQuery"
-          prepend-icon="mdi-magnify"
-          label="Buscar módulos"
-          single-line
-          hide-details
-          density="compact"
-          class="mx-4"
-          style="max-width: 300px"
-          clearable
-        ></v-text-field>
         <v-btn class="mt-2" color="primary" prepend-icon="mdi-plus" @click="openDialog()">
           Nuevo Módulo
         </v-btn>
@@ -41,7 +30,7 @@
           activatable
           density="comfortable"
           v-model:open="openNodes"
-          :search="searchQuery"
+          transition
         >
           <template v-slot:prepend="{ item }">
             <v-icon :color="item.children && item.children.length ? 'primary' : 'grey'">
@@ -679,7 +668,6 @@ export default defineComponent({
     isDragging: false,
     draggedNodeId: null,
     saving: false,
-    searchQuery: '',
     editedItem: {
       nombre: '',
       descripcion: '',
@@ -725,64 +713,7 @@ export default defineComponent({
         return formattedModule;
       };
 
-      let modules = this.moduleTree.map(module => formatModule(module));
-
-      // Si hay una búsqueda activa, filtrar los módulos
-      if (this.searchQuery) {
-        const searchLower = this.searchQuery.toLowerCase().trim();
-        const matchingIds = new Set();
-
-        const filterModules = (items) => {
-          return items.filter(item => {
-            // Verificar si el módulo actual coincide
-            const titleMatch = item.title.toLowerCase().includes(searchLower);
-            const descMatch = item.descripcion.toLowerCase().includes(searchLower);
-            const matches = titleMatch || descMatch;
-
-            if (matches) {
-              matchingIds.add(item.id);
-              // También agregar los IDs de todos los padres hasta la raíz
-              let currentParent = items.find(m => m.children?.some(child => child.id === item.id));
-              while (currentParent) {
-                matchingIds.add(currentParent.id);
-                currentParent = items.find(m => m.children?.some(child => child.id === currentParent.id));
-              }
-            }
-
-            // Procesar hijos recursivamente
-            if (item.children && item.children.length > 0) {
-              const filteredChildren = filterModules(item.children);
-              
-              // Si hay hijos que coinciden, mantener esos hijos y agregar el ID del padre
-              if (filteredChildren.length > 0) {
-                item.children = filteredChildren;
-                matchingIds.add(item.id);
-                return true;
-              } else if (matches) {
-                // Si el padre coincide pero no tiene hijos que coincidan, mantener el padre
-                item.children = []; // Limpiar los hijos que no coinciden
-                return true;
-              }
-              return false;
-            }
-
-            return matches;
-          });
-        };
-
-        // Aplicar el filtro y actualizar los nodos expandidos
-        modules = filterModules(modules);
-        
-        // Asegurarse de que los nodos se expandan después de la actualización
-        this.$nextTick(() => {
-          const idsToExpand = Array.from(matchingIds);
-          console.log('IDs a expandir:', idsToExpand);
-          console.log('Módulos filtrados:', modules);
-          this.openNodes = idsToExpand;
-        });
-      }
-
-      return modules;
+      return this.moduleTree.map(module => formatModule(module));
     },
     
     availableParents() {
@@ -847,24 +778,6 @@ export default defineComponent({
 
     hasChanges() {
       return JSON.stringify(this.dragModules) !== JSON.stringify(this.originalModules);
-    }
-  },
-
-  watch: {
-    moduleTree: {
-      handler(newVal) {
-        this.initializeDragModules();
-      },
-      immediate: true
-    },
-    searchQuery: {
-      immediate: true,
-      handler(newVal) {
-        if (!newVal) {
-          // Cuando se limpia la búsqueda, restaurar el árbol completo
-          this.openNodes = [...this.expandedNodes];
-        }
-      }
     }
   },
 
@@ -1420,6 +1333,36 @@ export default defineComponent({
       }
       this.allNodesExpanded = false;
     },
+
+    // Método para manejar el cambio en la búsqueda
+    handleSearch() {
+      if (this.searchQuery) {
+        // Forzar la actualización del treeview
+        this.$nextTick(() => {
+          const searchLower = this.searchQuery.toLowerCase().trim();
+          const expandNodes = new Set();
+
+          // Función recursiva para encontrar nodos que coincidan
+          const findMatchingNodes = (items) => {
+            items.forEach(item => {
+              if (
+                item.title.toLowerCase().includes(searchLower) ||
+                (item.descripcion || '').toLowerCase().includes(searchLower)
+              ) {
+                expandNodes.add(item.id);
+              }
+
+              if (item.children && item.children.length) {
+                findMatchingNodes(item.children);
+              }
+            });
+          };
+
+          findMatchingNodes(this.formattedModules);
+          this.openNodes = Array.from(expandNodes);
+        });
+      }
+    }
   }
 });
 </script>
