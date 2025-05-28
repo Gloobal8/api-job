@@ -28,11 +28,7 @@ import CouponsView from "../views/admin/CouponsView.vue";
 import TestimonialsAdmin from "@/views/admin/TestimonialsAdmin.vue";
 import PackagesView from "../views/admin/PackagesView.vue";
 import VerifyEmail from "../views/VerifyEmail.vue";
-
-console.log({
-  archive: 'router/index.js',
-  test: store.getters.isAuthenticated
-})
+import AdminsView from "@/components/admin/Admins.vue";
 
 const routes = [
   {
@@ -225,6 +221,11 @@ const routes = [
 
   // Admin routes (optional)
   {
+    path: "/admin",
+    name: "Admin Home",
+    component: () => import("../views/admin/Index.vue")
+  },
+  {
     path: "/admin/packages",
     name: "AdminPackagesView",
     component: () => import("../views/admin/PackagesView.vue"),
@@ -246,6 +247,15 @@ const routes = [
     path: "/admin/testimonials",
     name: "TestimonialsAdmin",
     component: TestimonialsAdmin,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
+  },
+  {
+    path: "/admin/administrators",
+    name: "AdminsManager",
+    component: AdminsView,
     meta: {
       requiresAuth: true,
       requiresAdmin: true,

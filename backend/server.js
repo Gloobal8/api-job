@@ -41,13 +41,14 @@ const customFieldRoutes = require("./routes/customFields");
 const testimonialRoutes = require("./routes/testimonials");
 const reviewRoutes = require("./routes/reviews");
 const blogRoutes = require("./routes/blog");
+const rolsAndAdminRoutes = require("./routes/admin");
 
 // Import new payment and package routes
 const packageRoutes = require("./routes/packages");
 const paymentRoutes = require("./routes/payments");
 const invoiceRoutes = require("./routes/invoices");
 const couponRoutes = require("./routes/coupons");
-
+const moduleRoutes = require("./routes/modules");
 // Importar middleware y rutas de localización
 const languageMiddleware = require("./middleware/languageMiddleware");
 const localizationRoutes = require("./routes/localization");
@@ -104,6 +105,9 @@ app.use("/api/custom-fields", customFieldRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/blog", blogRoutes);
+app.use("/api/rols", rolsAndAdminRoutes);
+app.use("/api/admins", rolsAndAdminRoutes);
+app.use("/api/modules", moduleRoutes);
 
 // New package and payment routes
 app.use("/api/packages", packageRoutes);
