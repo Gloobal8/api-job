@@ -60,7 +60,7 @@ const actions = {
       commit('SET_LOADING', true);
       commit('SET_ERROR', null);
       
-      const response = await axios.post('/modules/modules', moduleData);
+      const response = await axios.post('/modules/modules/create', moduleData);
       await dispatch('fetchModules'); // Recargar módulos después de crear uno nuevo
       
       return response.data;

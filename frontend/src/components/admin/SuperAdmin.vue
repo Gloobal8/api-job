@@ -91,7 +91,7 @@
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
-                  <v-select
+                  <v-combobox
                     v-model="formData.rolId"
                     :items="roles"
                     :return-object="false"
@@ -100,7 +100,7 @@
                     :rules="[rules.required]"
                     label="Rol*"
                     required
-                  ></v-select>
+                  ></v-combobox>
                 </v-col>
               </v-row>
             </v-form>
