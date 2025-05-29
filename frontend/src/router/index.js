@@ -27,6 +27,15 @@ import CategoryList from "@/views/blog/CategoryList.vue";
 import CouponsView from "../views/admin/CouponsView.vue";
 import TestimonialsAdmin from "@/views/admin/TestimonialsAdmin.vue";
 import PackagesView from "../views/admin/PackagesView.vue";
+<<<<<<< Updated upstream
+=======
+import VerifyEmail from "../views/VerifyEmail.vue";
+
+console.log({
+  archive: "router/index.js",
+  test: store.getters.isAuthenticated,
+});
+>>>>>>> Stashed changes
 
 const routes = [
   {
@@ -251,6 +260,22 @@ const routes = [
     },
   },
 
+  //--- PLATFORMS ---//
+  // GLOOBAL BUY
+  // ORDERS
+  {
+    path: "/orders",
+    name: "OrdersView",
+    component: () =>
+      import("../views/platforms/gloobal-buy/orders/OrdersView.vue"),
+  },
+  {
+    path: "/order-detail",
+    name: "OrderDetailView",
+    component: () =>
+      import("../views/platforms/gloobal-buy/orders/OrderDetailView.vue"),
+  },
+
   // Idiomas
   {
     path: "/admin/languages",
@@ -281,13 +306,21 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
+<<<<<<< Updated upstream
     if (!store.getters.isAuthenticated) {
+=======
+    console.log(`Authenticated: ${store.getters.isAuthenticated}`);
+
+    if (!store.getters.isAuthenticated) {
+      console.log("No puedes entrar");
+>>>>>>> Stashed changes
       next({
         path: "/login",
         query: { redirect: to.fullPath },
       });
     } else if (to.matched.some((record) => record.meta.requiresAdmin)) {
       // Check if user is admin
+<<<<<<< Updated upstream
       const user = store.state.auth.user;
       if (user && user.role === "admin") {
         next();
@@ -299,6 +332,32 @@ router.beforeEach((to, from, next) => {
     }
   } else {
     next();
+=======
+      console.log("Admin?");
+      const user = store.state.auth.user;
+      if (user && user.role === "admin") {
+        next(); // Proceed to the route if user is admin
+      } else {
+        next({ path: "/dashboard" }); // Redirect to dashboard if not admin
+      }
+    } else {
+      next(); // Proceed to the route if authenticated
+    }
+  } else {
+    // Check if the user is authenticated
+    if (store.getters.isAuthenticated) {
+      // If authenticated, redirect from login or register
+      if (to.path === "/login" || to.path === "/register") {
+        console.log("Ya estás autenticado, redirigiendo a dashboard");
+        next({ path: "/dashboard" }); // Redirect to dashboard if authenticated
+      } else {
+        next(); // Proceed to other routes
+      }
+    } else {
+      // If not authenticated, allow access to login and register
+      next(); // Proceed to login or register
+    }
+>>>>>>> Stashed changes
   }
 });
 

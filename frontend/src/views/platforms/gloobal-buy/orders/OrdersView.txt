@@ -1,0 +1,649 @@
+<template>
+  <div class="orders-view">
+    <!-- Header Section -->
+    <v-card elevation="0" class="orders-header">
+      <v-card-text class="d-flex" style="justify-content: space-between">
+        <div class="d-flex flex-column align-start">
+          <div class="text-caption text-uppercase mb-1">Orders</div>
+          <div class="text-h4 font-weight-bold">Orders</div>
+        </div>
+        <div class="d-flex align-center">
+          <v-btn
+            color="primary"
+            size="large"
+            class="mx-2"
+            prepend-icon="mdi-plus"
+          >
+            Add new order
+          </v-btn>
+
+          <v-btn
+            color="secondary"
+            size="large"
+            class="mx-2"
+            prepend-icon="mdi-puzzle"
+          >
+            Boost sales
+          </v-btn>
+
+          <v-btn variant="tonal" size="large" class="mx-2"> Help </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+    <div class="orders-main">
+      <!-- Analytics Cards -->
+      <v-row class="mb-4">
+        <v-col cols="12" sm="6" md="3">
+          <v-card>
+            <v-card-text class="d-flex flex-start">
+              <v-icon size="65" color="primary">mdi-chart-box-outline</v-icon>
+              <div class="d-flex flex-column" style="margin: 0.5rem 0.3rem 0">
+                <div
+                  class="text-caption text-uppercase text-primary"
+                  style="font-size: 0.9rem !important; font-weight: 600"
+                >
+                  Conversion Rate
+                </div>
+                <div class="text-h5 font-weight-bold">
+                  {{ conversionRate }}%
+                </div>
+                <v-sparkline
+                  :value="conversionTrend"
+                  color="success"
+                  line-width="2"
+                  height="40"
+                ></v-sparkline>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-card>
+            <v-card-text class="d-flex flex-start">
+              <v-icon size="65" color="primary">mdi-cart-off</v-icon>
+              <div class="d-flex flex-column" style="margin: 0.5rem 0.3rem 0">
+                <div
+                  class="text-caption text-uppercase text-primary"
+                  style="font-size: 0.9rem !important; font-weight: 600"
+                >
+                  Abandoned Carts
+                </div>
+                <div class="text-h5 font-weight-bold">{{ abandonedCarts }}</div>
+                <v-sparkline
+                  :value="abandonedTrend"
+                  color="error"
+                  line-width="2"
+                  height="40"
+                ></v-sparkline>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-card>
+            <v-card-text class="d-flex flex-start">
+              <v-icon size="65" color="primary">mdi-wallet-outline</v-icon>
+              <div class="d-flex flex-column" style="margin: 0.5rem 0.3rem 0">
+                <div
+                  class="text-caption text-uppercase text-primary"
+                  style="font-size: 0.9rem !important; font-weight: 600"
+                >
+                  Average Order Value
+                </div>
+                <div class="text-h5 font-weight-bold">
+                  ${{ averageOrderValue }}
+                </div>
+                <v-sparkline
+                  :value="avgOrderTrend"
+                  color="primary"
+                  line-width="2"
+                  height="40"
+                ></v-sparkline>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-card>
+            <v-card-text class="d-flex flex-start">
+              <v-icon size="65" color="primary">mdi-account-box-outline</v-icon>
+              <div class="d-flex flex-column" style="margin: 0.5rem 0.3rem 0">
+                <div
+                  class="text-caption text-uppercase text-primary"
+                  style="font-size: 0.9rem !important; font-weight: 600"
+                >
+                  Net Profit per Visit
+                </div>
+                <div class="text-h5 font-weight-bold">
+                  ${{ netProfitPerVisit }}
+                </div>
+                <v-sparkline
+                  :value="profitTrend"
+                  color="info"
+                  line-width="2"
+                  height="40"
+                ></v-sparkline>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+      <!-- Orders Table -->
+      <v-card>
+        <v-card-text>
+          <div class="d-flex" style="justify-content: space-between">
+            <div class="text-h5 font-weight-bold">Orders (5)</div>
+            <v-icon size="24" color="primary">mdi-cog-outline</v-icon>
+          </div>
+          <v-data-table
+            v-model="selected"
+            :headers="headers.filter((h) => h.visible)"
+            :items="orders"
+            :search="search"
+            :loading="loading"
+            :items-per-page="10"
+            show-select
+            class="elevation-0"
+          >
+            <!-- Header Filters -->
+            <template v-slot:header.data-table-select="{ props, on }">
+              <v-checkbox v-bind="props" v-on="on || {}"></v-checkbox>
+            </template>
+
+            <template v-slot:header="{ props: { headers } }">
+              <thead>
+                <tr>
+                  <th
+                    v-for="header in headers"
+                    :key="header.value"
+                    class="header-cell"
+                  >
+                    <div class="d-flex align-center">
+                      <v-menu>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            size="small"
+                            class="mr-2"
+                            v-bind="attrs"
+                            v-on="on"
+                          >
+                            mdi-dots-vertical
+                          </v-icon>
+                        </template>
+                        <v-list dense>
+                          <v-list-item>
+                            <v-checkbox
+                              v-model="header.visible"
+                              :label="header.title"
+                              hide-details
+                              dense
+                            ></v-checkbox>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
+                      {{ header.title }}
+                    </div>
+                  </th>
+                </tr>
+                <tr>
+                  <th
+                    v-for="header in headers"
+                    :key="'filter-' + header.value"
+                    class="filter-cell"
+                  >
+                    <v-text-field
+                      v-if="
+                        header.value !== 'actions' &&
+                        header.filterable !== false
+                      "
+                      v-model="filters[header.value]"
+                      :placeholder="'Buscar ' + header.title"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="header-filter ma-1"
+                      clearable
+                      @update:model-value="onFilterChange"
+                    ></v-text-field>
+                  </th>
+                </tr>
+              </thead>
+            </template>
+
+            <!-- Status Column -->
+            <template v-slot:item.status="{ item }">
+              <v-chip :color="getStatusColor(item.status)" small>
+                {{ item.status }}
+              </v-chip>
+            </template>
+            <!-- New Client Column -->
+            <template v-slot:item.new="{ item }">
+              {{ item.new ? "Yes" : "No" }}
+            </template>
+            <!-- Total Column -->
+            <template v-slot:item.total="{ item }">
+              €{{ item.total.toFixed(2) }}
+            </template>
+            <!-- Date Column -->
+            <template v-slot:item.date="{ item }">
+              {{ formatDateTime(item.date) }}
+            </template>
+            <!-- Actions Column -->
+            <template v-slot:item.actions="{ item }">
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    style="margin-right: 10px"
+                    small
+                    size="large"
+                    variant="plain"
+                    v-bind="props"
+                    @click="viewInvoice(item.raw)"
+                  >
+                    <v-icon small style="color: #949494"
+                      >mdi-invoice-text-outline</v-icon
+                    >
+                  </v-btn>
+                </template>
+                <span>View invoice</span>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    style="margin-right: 10px"
+                    small
+                    size="large"
+                    variant="plain"
+                    v-bind="props"
+                    @click="trackShipment(item.raw)"
+                  >
+                    <v-icon small style="color: #949494">mdi-truck</v-icon>
+                  </v-btn>
+                </template>
+                <span>View delivery slip</span>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    small
+                    size="large"
+                    variant="plain"
+                    v-bind="props"
+                    @click="viewDetails(item.raw)"
+                  >
+                    <v-icon small style="color: #949494"
+                      >mdi-magnify-plus-outline</v-icon
+                    >
+                  </v-btn>
+                </template>
+                <span>View</span>
+              </v-tooltip>
+            </template>
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </div>
+  </div>
+</template>
+<script>
+import { VSparkline } from "vuetify/labs/components";
+export default {
+  name: "OrdersView",
+  components: {
+    "v-sparkline": VSparkline,
+  },
+  data() {
+    return {
+      search: "",
+      loading: false,
+      filters: {},
+      headers: [
+        { title: "Order ID", value: "id", visible: true },
+        { title: "Reference", value: "reference", visible: true },
+        { title: "New client", value: "new", visible: true },
+        { title: "Delivery", value: "delivery", visible: true },
+        { title: "Customer", value: "customer", visible: true },
+        { title: "Total", value: "total", visible: true },
+        { title: "Payment", value: "payment", visible: true },
+        { title: "Status", value: "status", visible: true },
+        { title: "Date", value: "date", visible: true },
+        { title: "Actions", value: "actions", sortable: false, visible: true },
+      ],
+      orders: [
+        {
+          id: "ORD-001",
+          reference: "REF123456",
+          new: true,
+          delivery: "Spain",
+          customer: "Juan García",
+          total: 299.99,
+          payment: "Credit Card",
+          status: "Authorized. To be captured by merchant",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-002",
+          reference: "REF789012",
+          new: false,
+          delivery: "France",
+          customer: "Marie Dubois",
+          total: 149.99,
+          payment: "Bank transfer",
+          status: "Awaiting bank transfer payment",
+          date: "2024-04-26",
+        },
+        {
+          id: "ORD-003",
+          reference: "REF345678",
+          new: true,
+          delivery: "Germany",
+          customer: "Hans Schmidt",
+          total: 499.99,
+          payment: "Cash On Delivery",
+          status: "Awaiting Cash On Delivery validation",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-004",
+          reference: "REF901234",
+          new: false,
+          delivery: "Italy",
+          customer: "Marco Rossi",
+          total: 199.99,
+          payment: "Payment by check",
+          status: "Awaiting check payment",
+          date: "2024-04-25",
+        },
+        {
+          id: "ORD-005",
+          reference: "REF567890",
+          new: true,
+          delivery: "Portugal",
+          customer: "João Silva",
+          total: 399.99,
+          payment: "PayPal",
+          status: "Canceled",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-006",
+          reference: "REF234567",
+          new: false,
+          delivery: "Netherlands",
+          customer: "Jan de Vries",
+          total: 249.99,
+          payment: "Credit Card",
+          status: "Delivered",
+          date: "2024-04-26",
+        },
+        {
+          id: "ORD-007",
+          reference: "REF890123",
+          new: true,
+          delivery: "Belgium",
+          customer: "Emma Peeters",
+          total: 349.99,
+          payment: "Bank Transfer",
+          status: "On backorder (not paid)",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-008",
+          reference: "REF456789",
+          new: false,
+          delivery: "Sweden",
+          customer: "Erik Larsson",
+          total: 599.99,
+          payment: "Credit Card",
+          status: "On backorder (paid)",
+          date: "2024-04-25",
+        },
+        {
+          id: "ORD-009",
+          reference: "REF012345",
+          new: true,
+          delivery: "Denmark",
+          customer: "Anders Nielsen",
+          total: 449.99,
+          payment: "PayPal",
+          status: "Partial refund",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-010",
+          reference: "REF678901",
+          new: false,
+          delivery: "Austria",
+          customer: "Thomas Weber",
+          total: 299.99,
+          payment: "Credit Card",
+          status: "Payment accepted",
+          date: "2024-04-26",
+        },
+        {
+          id: "ORD-011",
+          reference: "REF112233",
+          new: true,
+          delivery: "Ireland",
+          customer: "Sean O'Connor",
+          total: 449.99,
+          payment: "Credit Card",
+          status: "Payment error",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-012",
+          reference: "REF445566",
+          new: false,
+          delivery: "Poland",
+          customer: "Anna Kowalski",
+          total: 299.99,
+          payment: "PayPal",
+          status: "Processing in progress",
+          date: "2024-04-26",
+        },
+        {
+          id: "ORD-013",
+          reference: "REF778899",
+          new: true,
+          delivery: "Norway",
+          customer: "Erik Hansen",
+          total: 649.99,
+          payment: "Bank Transfer",
+          status: "Refunded",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-014",
+          reference: "REF001122",
+          new: false,
+          delivery: "Finland",
+          customer: "Matti Virtanen",
+          total: 399.99,
+          payment: "Credit Card",
+          status: "Remote payment accepted",
+          date: "2024-04-25",
+        },
+        {
+          id: "ORD-015",
+          reference: "REF334455",
+          new: true,
+          delivery: "Greece",
+          customer: "Nikos Papadopoulos",
+          total: 549.99,
+          payment: "PayPal",
+          status: "Shipped",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-016",
+          reference: "REF667788",
+          new: false,
+          delivery: "Czech Republic",
+          customer: "Jan Novak",
+          total: 199.99,
+          payment: "Bank Transfer",
+          status: "Waiting capture",
+          date: "2024-04-26",
+        },
+        {
+          id: "ORD-017",
+          reference: "REF990011",
+          new: true,
+          delivery: "Hungary",
+          customer: "István Nagy",
+          total: 449.99,
+          payment: "Credit Card",
+          status: "Waiting for Credit Card Payment",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-018",
+          reference: "REF223344",
+          new: false,
+          delivery: "Romania",
+          customer: "Ion Popescu",
+          total: 299.99,
+          payment: "PayPal",
+          status: "Waiting for Local Payment Method",
+          date: "2024-04-25",
+        },
+        {
+          id: "ORD-019",
+          reference: "REF556677",
+          new: true,
+          delivery: "Croatia",
+          customer: "Ana Horvat",
+          total: 599.99,
+          payment: "PayPal",
+          status: "Waiting for PayPal payment",
+          date: "2024-04-27",
+        },
+        {
+          id: "ORD-020",
+          reference: "REF889900",
+          new: false,
+          delivery: "Slovakia",
+          customer: "Martin Kovac",
+          total: 349.99,
+          payment: "Crypto",
+          status: "Waiting for crypto",
+          date: "2024-04-26",
+        },
+      ],
+      selected: [],
+      conversionRate: 15.8,
+      abandonedCarts: 23,
+      averageOrderValue: 149.99,
+      netProfitPerVisit: 4.85,
+      conversionTrend: [15, 13, 18, 16, 15, 17, 16],
+      abandonedTrend: [25, 23, 21, 24, 22, 23, 23],
+      avgOrderTrend: [140, 145, 150, 148, 155, 153, 150],
+      profitTrend: [4.2, 4.5, 4.8, 4.7, 5.0, 4.9, 4.85],
+    };
+  },
+  methods: {
+    applyFilters() {
+      // Implementar la lógica de filtrado
+      const filteredOrders = this.orders.filter((order) => {
+        return Object.keys(this.filters).every((key) => {
+          if (!this.filters[key]) return true;
+          return String(order[key])
+            .toLowerCase()
+            .includes(this.filters[key].toLowerCase());
+        });
+      });
+      this.orders = filteredOrders;
+    },
+    onFilterChange() {
+      // Debounce para evitar demasiadas actualizaciones
+      clearTimeout(this.filterTimeout);
+      this.filterTimeout = setTimeout(() => {
+        this.applyFilters();
+      }, 300);
+    },
+    getStatusColor(status) {
+      const colors = {
+        "Authorized. To be captured by merchant": "info",
+        "Awaiting bank transfer payment": "warning",
+        "Awaiting Cash On Delivery validation": "warning",
+        "Awaiting check payment": "warning",
+        Canceled: "error",
+        Delivered: "success",
+        "On backorder (not paid)": "warning",
+        "On backorder (paid)": "info",
+        "Partial refund": "warning",
+        "Payment accepted": "success",
+        "Payment error": "error",
+        "Processing in progress": "info",
+        Refunded: "warning",
+        "Remote payment accepted": "success",
+        Shipped: "primary",
+        "Waiting capture": "warning",
+        "Waiting for Credit Card Payment": "warning",
+        "Waiting for Local Payment Method": "warning",
+        "Waiting for PayPal payment": "warning",
+        "Waiting for crypto": "warning",
+      };
+
+      return colors[status] || "grey";
+    },
+    viewInvoice(item) {
+      // Implement invoice view logic
+      console.log("View invoice for order:", item.id);
+    },
+    trackShipment(item) {
+      // Implement shipment tracking logic
+      console.log("Track shipment for order:", item.id);
+    },
+    viewDetails(item) {
+      // Implement order details view logic
+      console.log("View details for order:", item.id);
+    },
+    formatDateTime(dateString) {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      return date.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    },
+    createOrder() {
+      // Implement order creation logic
+    },
+    exportOrders() {
+      // Implement orders export logic
+    },
+  },
+  mounted() {
+    // Fetch orders data
+  },
+};
+</script>
+<style scoped>
+.orders-view {
+  padding: 0;
+}
+.orders-header {
+  background: white;
+}
+.orders-main {
+  padding: 24px;
+}
+.header-filter {
+  margin: 8px 0;
+}
+/* Estilos para los botones de acción */
+.v-btn.v-btn--variant-plain {
+  padding: 4px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+}
+/* Ajustes para tooltips */
+:deep(.v-tooltip) {
+  margin-top: 4px;
+}
+</style>
