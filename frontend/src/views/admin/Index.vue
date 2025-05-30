@@ -18,7 +18,8 @@
       </v-tab-item>
       <!-- Permisos Tab -->
       <v-tab-item v-if="tab == 'permissions'">
-        <Permissions />
+        <h1>Estamos trabajando en los permisos... ¿De verdad verdaita? Si sí, enserio.</h1>
+        <!-- <Permissions /> -->
       </v-tab-item>
       <!-- Módulos Tab -->
       <v-tab-item v-if="tab == 'modules'">
