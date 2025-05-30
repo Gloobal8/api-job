@@ -26,7 +26,7 @@
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer" app temporary>
-      <v-list-item>
+      <v-list-item class="pt-5">
         <v-list-item-title class="text-h6"> Job Board </v-list-item-title>
         <v-list-item-subtitle> Find your dream job </v-list-item-subtitle>
       </v-list-item>
@@ -48,12 +48,21 @@
             <v-list-item-title>Home</v-list-item-title>
           </v-list-item>
 
+<<<<<<< HEAD
           <v-list-item v-if="isLoggedIn" to="/dashboard" link>
             <template v-slot:prepend>
               <v-icon>mdi-view-dashboard-outline</v-icon>
             </template>
             <v-list-item-title>Dashboard</v-list-item-title>
           </v-list-item>
+=======
+        <v-list-item v-if="isLoggedIn" to="/dashboard" link>
+          <template v-slot:prepend>
+            <v-icon>mdi-view-dashboard-outline</v-icon>
+          </template>
+          <v-list-item-title>Dashboard</v-list-item-title>
+        </v-list-item>
+>>>>>>> develop
 
           <v-list-item to="/jobs" link>
             <template v-slot:prepend>
@@ -69,6 +78,7 @@
             <v-list-item-title>Companies</v-list-item-title>
           </v-list-item>
 
+<<<<<<< HEAD
           <v-list-item v-if="isLoggedIn" to="/profile" link>
             <template v-slot:prepend>
               <v-icon>mdi-account</v-icon>
@@ -82,6 +92,21 @@
             </template>
             <v-list-item-title>Messages</v-list-item-title>
           </v-list-item>
+=======
+        <v-list-item v-if="isLoggedIn" to="/profile" link>
+          <template v-slot:prepend>
+            <v-icon>mdi-account</v-icon>
+          </template>
+          <v-list-item-title>My Profile</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item v-if="isLoggedIn" to="/messages" link>
+          <template v-slot:prepend>
+            <v-icon>mdi-message</v-icon>
+          </template>
+          <v-list-item-title>Messages</v-list-item-title>
+        </v-list-item>
+>>>>>>> develop
 
           <!--<v-list-item to="/notifications" link>
           <template v-slot:prepend>
@@ -149,28 +174,12 @@
           </v-list-item>
         </v-list-group>
 
-        <v-list-item to="/site-map" link>
+        <v-list-item v-if="isLoggedIn" to="/site-map" link>
           <template v-slot:prepend>
             <v-icon>mdi-sitemap</v-icon>
           </template>
           <v-list-item-title>Sitemap</v-list-item-title>
         </v-list-item>
-
-        <template v-if="isLoggedIn">
-          <v-list-item to="/dashboard" link>
-            <template v-slot:prepend>
-              <v-icon>mdi-view-dashboard</v-icon>
-            </template>
-            <v-list-item-title>Dashboard</v-list-item-title>
-          </v-list-item>
-
-          <v-list-item to="/profile" link>
-            <template v-slot:prepend>
-              <v-icon>mdi-account</v-icon>
-            </template>
-            <v-list-item-title>My Profile</v-list-item-title>
-          </v-list-item>
-        </template>
       </v-list>
     </v-navigation-drawer>
 
@@ -204,7 +213,7 @@ export default {
   }),
   computed: {
     isLoggedIn() {
-      return this.$store.getters.isLoggedIn;
+      return this.$store.getters.isAuthenticated;
     },
   },
   methods: {

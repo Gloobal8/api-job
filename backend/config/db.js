@@ -1,30 +1,21 @@
-const low = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
-const path = require("path");
+const { MongoClient } = require('mongodb');
 
-const adapter = new FileSync(path.join(__dirname, "db.json"));
-const db = low(adapter);
+const URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_SERVER}/`;
 
-// Set default data structure
-db.defaults({
-  users: [],
-  addresses: [],
-  companies: [],
-  jobs: [],
-  jobCategories: [],
-  jobTypes: [],
-  jobSkills: [],
-  jobShifts: [],
-  jobExperiences: [],
-  careerLevels: [],
-  functionalAreas: [],
-  degreeTypes: [],
-  degreeLevels: [],
-  languageLevels: [],
-  applications: [],
-  packages: [],
-  transactions: [],
-  invoices: [],
-}).write();
-
-module.exports = db;
+class dbClient {
+    constructor() {
+        this.client = new MongoClient(URI);
+        this.connectDB();
+    }
+    async connectDB() {
+        try {
+            await this.client.connect()
+            this.db = this.client.db('Cluster0');
+            console.log('Conexión exitosa')
+        } catch (error) {
+            console.log(error)
+        }
+        
+    }
+}
+module.exports = new dbClient();

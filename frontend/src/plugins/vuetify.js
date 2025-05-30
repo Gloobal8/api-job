@@ -1,12 +1,19 @@
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
+<<<<<<< HEAD
 import { aliases, mdi } from "vuetify/iconsets/mdi"; // Añadida importación de aliases y mdi
 import "@mdi/font/css/materialdesignicons.css"; // Añadida importación de estilos MDI
+=======
+import { VTreeview } from 'vuetify/labs/VTreeview'
+>>>>>>> develop
 import "vuetify/styles";
 
 export default createVuetify({
-  components,
+  components: {
+    ...components,
+    VTreeview,
+  },
   directives,
   icons: {
     defaultSet: "mdi",

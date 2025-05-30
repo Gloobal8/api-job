@@ -41,13 +41,14 @@ const customFieldRoutes = require("./routes/customFields");
 const testimonialRoutes = require("./routes/testimonials");
 const reviewRoutes = require("./routes/reviews");
 const blogRoutes = require("./routes/blog");
+const rolsAndAdminRoutes = require("./routes/admin");
 
 // Import new payment and package routes
 const packageRoutes = require("./routes/packages");
 const paymentRoutes = require("./routes/payments");
 const invoiceRoutes = require("./routes/invoices");
 const couponRoutes = require("./routes/coupons");
-
+const moduleRoutes = require("./routes/modules");
 // Importar middleware y rutas de localización
 const languageMiddleware = require("./middleware/languageMiddleware");
 const localizationRoutes = require("./routes/localization");
@@ -55,12 +56,11 @@ const cookieParser = require("cookie-parser");
 
 // Create Express app
 const app = express();
-
 // Middleware
 // Configuración CORS más específica
 app.use(
   cors({
-    origin: ["http://localhost:8080", "http://localhost:5000"], // Orígenes permitidos
+    origin: ["http://localhost:8080", "http://localhost:5000", "http://127.0.0.1:5500"], // Orígenes permitidos
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Permite cookies en solicitudes cross-origin
@@ -105,6 +105,9 @@ app.use("/api/custom-fields", customFieldRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/blog", blogRoutes);
+app.use("/api/rols", rolsAndAdminRoutes);
+app.use("/api/admins", rolsAndAdminRoutes);
+app.use("/api/modules", moduleRoutes);
 
 // New package and payment routes
 app.use("/api/packages", packageRoutes);

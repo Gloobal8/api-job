@@ -670,23 +670,23 @@ export default {
   },
   mounted() {
     // Manejar errores de ResizeObserver
-    window.addEventListener(
-      "error",
-      (event) => {
-        if (
-          event.message === "ResizeObserver loop limit exceeded" ||
-          event.message.includes(
-            "ResizeObserver loop completed with undelivered notifications"
-          )
-        ) {
-          event.stopPropagation();
-          event.stopImmediatePropagation();
-          event.preventDefault();
-          return false;
-        }
-      },
-      true
-    );
+    // window.addEventListener(
+    //   "error",
+    //   (event) => {
+    //     if (
+    //       event.message === "ResizeObserver loop limit exceeded" ||
+    //       event.message.includes(
+    //         "ResizeObserver loop completed with undelivered notifications"
+    //       )
+    //     ) {
+    //       event.stopPropagation();
+    //       event.stopImmediatePropagation();
+    //       event.preventDefault();
+    //       return false;
+    //     }
+    //   },
+    //   true
+    // );
   },
   beforeUnmount() {
     // Eliminar evento al destruir el componente

@@ -7,6 +7,8 @@ import reviews from "./modules/reviews";
 import blog from "./modules/blog";
 import snackbar from "./modules/snackbar";
 import jobs from "./modules/jobs";
+import admin from './modules/admin';
+import modules from './modules/modules';
 
 export default createStore({
   state: {
@@ -32,6 +34,8 @@ export default createStore({
     blog,
     snackbar,
     jobs,
+    admin,
+    modules
     // Otros módulos...
   },
   mutations: {
@@ -117,8 +121,12 @@ export default createStore({
       try {
         commit("SET_LOADING", true);
         const response = await axios.post("/auth/login", credentials);
-        commit("SET_USER", response.data.user);
-        commit("SET_TOKEN", response.data.token);
+        console.log({
+          archive: 'store/index',
+          response
+        })
+        commit("SET_USER", response.data?.data?.user);
+        commit("SET_TOKEN", response.data?.data?.token);
         commit("SET_ERROR", null);
         return response;
       } catch (error) {
@@ -145,6 +153,22 @@ export default createStore({
         throw error;
       } finally {
         commit("SET_LOADING", false);
+      }
+    },
+    async verifyEmail({ commit }, token) {
+      try {
+          commit("SET_LOADING", true);
+          const response = await axios.post("/auth/verify-email", token);
+          commit("SET_ERROR", null);
+          return response;
+      } catch (error) {
+          commit(
+              "SET_ERROR",
+              error.response ? error.response.data.message : "Verification failed"
+          );
+          throw error; // Rethrow the error for further handling in the component
+      } finally {
+          commit("SET_LOADING", false);
       }
     },
     async fetchUser({ commit, state }) {
