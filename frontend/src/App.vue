@@ -48,21 +48,12 @@
             <v-list-item-title>Home</v-list-item-title>
           </v-list-item>
 
-<<<<<<< HEAD
-          <v-list-item v-if="isLoggedIn" to="/dashboard" link>
-            <template v-slot:prepend>
-              <v-icon>mdi-view-dashboard-outline</v-icon>
-            </template>
-            <v-list-item-title>Dashboard</v-list-item-title>
-          </v-list-item>
-=======
         <v-list-item v-if="isLoggedIn" to="/dashboard" link>
           <template v-slot:prepend>
             <v-icon>mdi-view-dashboard-outline</v-icon>
           </template>
           <v-list-item-title>Dashboard</v-list-item-title>
         </v-list-item>
->>>>>>> develop
 
           <v-list-item to="/jobs" link>
             <template v-slot:prepend>
@@ -78,21 +69,6 @@
             <v-list-item-title>Companies</v-list-item-title>
           </v-list-item>
 
-<<<<<<< HEAD
-          <v-list-item v-if="isLoggedIn" to="/profile" link>
-            <template v-slot:prepend>
-              <v-icon>mdi-account</v-icon>
-            </template>
-            <v-list-item-title>My Profile</v-list-item-title>
-          </v-list-item>
-
-          <v-list-item v-if="isLoggedIn" to="/messages" link>
-            <template v-slot:prepend>
-              <v-icon>mdi-message</v-icon>
-            </template>
-            <v-list-item-title>Messages</v-list-item-title>
-          </v-list-item>
-=======
         <v-list-item v-if="isLoggedIn" to="/profile" link>
           <template v-slot:prepend>
             <v-icon>mdi-account</v-icon>
@@ -106,7 +82,6 @@
           </template>
           <v-list-item-title>Messages</v-list-item-title>
         </v-list-item>
->>>>>>> develop
 
           <!--<v-list-item to="/notifications" link>
           <template v-slot:prepend>
