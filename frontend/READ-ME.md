@@ -4,7 +4,7 @@
 
 Uso de traducciones en componentes Vue
 Ahora puedes usar las traducciones en cualquier componente Vue:
-
+Test
 <template>
   <div>
     <h1>{{ $t('jobs.title') }}</h1>
