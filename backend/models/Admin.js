@@ -26,6 +26,13 @@ const adminSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingrese un correo válido']
   },
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationSentAt: {
+    type: Date
+  },
   rolId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
@@ -59,26 +66,28 @@ class Admin {
   static async getAll() {
     try {
       const adminsCollection = dbClient.db.collection('admins');
-      console.log({
-        archive: 'backend/models/Admin.js',
-        data: await adminsCollection.find({
-          activo: true
-        }).toArray()
-      })
-      const admins = await adminsCollection.find({
-        activo: true
-      }).toArray()
-
-      if (!admins) {
+      // Inactivar automáticamente si no verificó en 24h
+      const now = new Date();
+      const admins = await adminsCollection.find({}).toArray();
+      for (const admin of admins) {
+        if (!admin.verified && admin.emailVerificationSentAt && admin.activo) {
+          const diff = now - new Date(admin.emailVerificationSentAt);
+          if (diff > 24 * 60 * 60 * 1000) {
+            await adminsCollection.updateOne({ _id: admin._id }, { $set: { activo: false } });
+            admin.activo = false;
+          }
+        }
+      }
+      const activos = admins.filter(a => a.activo);
+      if (!activos.length) {
         return {
           status: false,
           message: 'No se encontraron administradores'
         };
       }
-
       return {
         status: true,
-        data: admins
+        data: activos
       };
     } catch (error) {
       console.error('Error getting admin:', error);
@@ -113,6 +122,8 @@ class Admin {
         ...adminData,
         password: hashedPassword,
         activo: true,
+        verified: false,
+        emailVerificationSentAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -147,55 +158,53 @@ class Admin {
   static async update(id, adminData) {
     try {
       const adminsCollection = dbClient.db.collection('admins');
-
       // Verificar si existe el admin
       const existingAdmin = await adminsCollection.findOne({ 
         _id: new ObjectId(id),
         activo: true 
       });
-      console.log({
-        archive: 'backend/models/Admin.js',
-        data: existingAdmin
-      })
-
       if (!existingAdmin) {
         return {
           status: false,
           message: 'Administrador no encontrado'
         };
       }
-
       // Verificar si el correo ya existe (si se está actualizando)
-      if (adminData.correo) {
+      let correoCambiado = false;
+      if (adminData.correo && adminData.correo.toLowerCase() !== existingAdmin.correo) {
         const duplicateEmail = await adminsCollection.findOne({
           _id: { $ne: new ObjectId(id) },
           correo: adminData.correo.toLowerCase(),
           activo: true
         });
-
         if (duplicateEmail) {
           return {
             status: false,
             message: 'Ya existe un administrador con este correo'
           };
         }
+        correoCambiado = true;
       }
-
-      // Convertir el rolId a ObjectId si está presente
-      // if (adminData.rolId) {
-      //   adminData.rolId = new ObjectId(adminData.rolId);
-      // }
-
       const updateData = {
         ...adminData,
         updatedAt: new Date()
       };
-
+      if (correoCambiado) {
+        updateData.verified = false;
+        updateData.emailVerificationSentAt = new Date();
+        // Enviar correo de verificación
+        const jwt = require('jsonwebtoken');
+        const token = jwt.sign({ to: adminData.correo }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const SendMail = require('../utils/sendMail');
+        const templateEmail = require('../utils/templateEmail');
+        const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:8080'}/admins/verify-email?token=${token}&to=${encodeURIComponent(adminData.correo)}`;
+        const html = templateEmail.template(adminData.nombre || existingAdmin.nombre, verificationUrl);
+        await SendMail.sendMail(adminData.correo, 'Verifica tu correo de administrador', adminData.nombre || existingAdmin.nombre, `/admins/verify-email`);
+      }
       const result = await adminsCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: updateData }
       );
-
       if (result.modifiedCount === 1) {
         return {
           status: true,
@@ -206,7 +215,6 @@ class Admin {
           }
         };
       }
-
       return {
         status: false,
         message: 'Error al actualizar el administrador'
@@ -293,11 +301,11 @@ class Admin {
       const jwt = require('jsonwebtoken');
       const token = jwt.sign({ to: email }, process.env.JWT_SECRET, { expiresIn: '1d' });
       // Enviar email
-      const sendMail = require('../utils/sendMail');
+      const SendMail = require('../utils/sendMail');
       const templateEmail = require('../utils/templateEmail');
       const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:8080'}/admins/verify-email?token=${token}&to=${encodeURIComponent(email)}`;
-      const html = templateEmail.getVerificationEmail({ name: admin.nombre, url: verificationUrl });
-      await sendMail(email, 'Verifica tu correo de administrador', html);
+      const html = templateEmail.template(admin.nombre, verificationUrl);
+      await SendMail.sendMail(email, 'Verifica tu correo de administrador', admin.nombre, `/admins/verify-email`);
       return { status: true, message: 'Correo de verificación enviado', previewUrl: verificationUrl };
     } catch (error) {
       return { status: false, message: 'Error al reenviar el correo de verificación', error };

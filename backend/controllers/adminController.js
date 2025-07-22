@@ -115,7 +115,6 @@ exports.editAdmin = async (req, res) => {
   try {
     const { nombre, apellido, correo, rolId } = req.body;
     const result = await Admin.update(req.params.id, { nombre, apellido, correo, rolId });
-    
     if (result.status) {
       res.json({
         success: true,
