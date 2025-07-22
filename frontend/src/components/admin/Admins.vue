@@ -101,6 +101,24 @@
                     required
                   ></v-select>
                 </v-col>
+                <v-col cols="12" sm="6" v-if="!isEdit">
+                  <v-text-field
+                    v-model="formData.password"
+                    :rules="[rules.required, rules.minPassword]"
+                    label="Contraseña*"
+                    type="password"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" v-if="!isEdit">
+                  <v-text-field
+                    v-model="formData.confirmPassword"
+                    :rules="[rules.required, v => v === formData.password || 'Las contraseñas no coinciden']"
+                    label="Verificar Contraseña*"
+                    type="password"
+                    required
+                  ></v-text-field>
+                </v-col>
               </v-row>
             </v-form>
           </v-container>
@@ -195,7 +213,8 @@ export default {
       rules: {
         required: v => !!v || 'Este campo es requerido',
         minLength: v => (v && v.length >= 2) || 'Mínimo 2 caracteres',
-        email: v => /.+@.+\..+/.test(v) || 'El correo debe ser válido'
+        email: v => /.+@.+\..+/.test(v) || 'El correo debe ser válido',
+        minPassword: v => (v && v.length >= 6) || 'Mínimo 6 caracteres',
       }
     };
   },
@@ -218,7 +237,9 @@ export default {
         nombre: '',
         apellido: '',
         correo: '',
-        rolId: ''
+        rolId: '',
+        password: '',
+        confirmPassword: ''
       };
     },
     openModal() {
@@ -271,7 +292,8 @@ export default {
           });
           this.showMessage('Administrador actualizado exitosamente');
         } else {
-          await this.addAdmin(this.formData);
+          const { password, confirmPassword, ...rest } = this.formData;
+          await this.addAdmin({ ...rest, password });
           this.showMessage('Administrador creado exitosamente');
         }
         this.closeModal();

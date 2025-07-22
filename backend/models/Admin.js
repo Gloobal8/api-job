@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dbClient = require('../config/db');
 const { ObjectId } = require('mongodb');
+const bcrypt = require('bcryptjs');
 
 const adminSchema = new mongoose.Schema({
   nombre: {
@@ -25,10 +26,21 @@ const adminSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingrese un correo válido']
   },
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationSentAt: {
+    type: Date
+  },
   rolId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
     required: [true, 'El rol es requerido']
+  },
+  password: {
+    type: String,
+    required: false // Solo requerido al crear
   },
   activo: {
     type: Boolean,
@@ -54,26 +66,28 @@ class Admin {
   static async getAll() {
     try {
       const adminsCollection = dbClient.db.collection('admins');
-      console.log({
-        archive: 'backend/models/Admin.js',
-        data: await adminsCollection.find({
-          activo: true
-        }).toArray()
-      })
-      const admins = await adminsCollection.find({
-        activo: true
-      }).toArray()
-
-      if (!admins) {
+      // Inactivar automáticamente si no verificó en 24h
+      const now = new Date();
+      const admins = await adminsCollection.find({}).toArray();
+      for (const admin of admins) {
+        if (!admin.verified && admin.emailVerificationSentAt && admin.activo) {
+          const diff = now - new Date(admin.emailVerificationSentAt);
+          if (diff > 24 * 60 * 60 * 1000) {
+            await adminsCollection.updateOne({ _id: admin._id }, { $set: { activo: false } });
+            admin.activo = false;
+          }
+        }
+      }
+      const activos = admins.filter(a => a.activo);
+      if (!activos.length) {
         return {
           status: false,
           message: 'No se encontraron administradores'
         };
       }
-
       return {
         status: true,
-        data: admins
+        data: activos
       };
     } catch (error) {
       console.error('Error getting admin:', error);
@@ -98,13 +112,25 @@ class Admin {
         };
       }
 
+      // Hash de la contraseña si viene en adminData
+      let hashedPassword = undefined;
+      if (adminData.password) {
+        hashedPassword = await bcrypt.hash(adminData.password, 10);
+      }
       // Preparar el documento a insertar
       const newAdmin = {
         ...adminData,
+        password: hashedPassword,
         activo: true,
+        verified: false,
+        emailVerificationSentAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date()
       };
+      // No guardar el campo password si no se provee
+      if (!adminData.password) {
+        delete newAdmin.password;
+      }
 
       const result = await adminsCollection.insertOne(newAdmin);
 
@@ -132,55 +158,53 @@ class Admin {
   static async update(id, adminData) {
     try {
       const adminsCollection = dbClient.db.collection('admins');
-
       // Verificar si existe el admin
       const existingAdmin = await adminsCollection.findOne({ 
         _id: new ObjectId(id),
         activo: true 
       });
-      console.log({
-        archive: 'backend/models/Admin.js',
-        data: existingAdmin
-      })
-
       if (!existingAdmin) {
         return {
           status: false,
           message: 'Administrador no encontrado'
         };
       }
-
       // Verificar si el correo ya existe (si se está actualizando)
-      if (adminData.correo) {
+      let correoCambiado = false;
+      if (adminData.correo && adminData.correo.toLowerCase() !== existingAdmin.correo) {
         const duplicateEmail = await adminsCollection.findOne({
           _id: { $ne: new ObjectId(id) },
           correo: adminData.correo.toLowerCase(),
           activo: true
         });
-
         if (duplicateEmail) {
           return {
             status: false,
             message: 'Ya existe un administrador con este correo'
           };
         }
+        correoCambiado = true;
       }
-
-      // Convertir el rolId a ObjectId si está presente
-      // if (adminData.rolId) {
-      //   adminData.rolId = new ObjectId(adminData.rolId);
-      // }
-
       const updateData = {
         ...adminData,
         updatedAt: new Date()
       };
-
+      if (correoCambiado) {
+        updateData.verified = false;
+        updateData.emailVerificationSentAt = new Date();
+        // Enviar correo de verificación
+        const jwt = require('jsonwebtoken');
+        const token = jwt.sign({ to: adminData.correo }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const SendMail = require('../utils/sendMail');
+        const templateEmail = require('../utils/templateEmail');
+        const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:8080'}/admins/verify-email?token=${token}&to=${encodeURIComponent(adminData.correo)}`;
+        const html = templateEmail.template(adminData.nombre || existingAdmin.nombre, verificationUrl);
+        await SendMail.sendMail(adminData.correo, 'Verifica tu correo de administrador', adminData.nombre || existingAdmin.nombre, `/admins/verify-email`);
+      }
       const result = await adminsCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: updateData }
       );
-
       if (result.modifiedCount === 1) {
         return {
           status: true,
@@ -191,7 +215,6 @@ class Admin {
           }
         };
       }
-
       return {
         status: false,
         message: 'Error al actualizar el administrador'
@@ -244,6 +267,48 @@ class Admin {
     } catch (error) {
       console.error('Error deleting admin:', error);
       throw `Error/Admin.js: ${error}`;
+    }
+  }
+
+  static async verifyEmail(email) {
+    try {
+      const adminsCollection = dbClient.db.collection('admins');
+      const admin = await adminsCollection.findOne({ correo: email.toLowerCase(), activo: true });
+      if (!admin) {
+        return { status: false, message: 'Administrador no encontrado' };
+      }
+      if (admin.verified) {
+        return { status: true, message: 'El correo ya ha sido verificado', data: admin };
+      }
+      await adminsCollection.updateOne({ correo: email.toLowerCase() }, { $set: { verified: true, updatedAt: new Date() } });
+      return { status: true, message: 'Correo de administrador verificado exitosamente', data: { ...admin, verified: true } };
+    } catch (error) {
+      return { status: false, message: 'Error al verificar el correo de administrador', error };
+    }
+  }
+
+  static async resendVerification(email) {
+    try {
+      const adminsCollection = dbClient.db.collection('admins');
+      const admin = await adminsCollection.findOne({ correo: email.toLowerCase(), activo: true });
+      if (!admin) {
+        return { status: false, message: 'Administrador no encontrado' };
+      }
+      if (admin.verified) {
+        return { status: true, message: 'El correo ya ha sido verificado', data: admin };
+      }
+      // Generar token de verificación
+      const jwt = require('jsonwebtoken');
+      const token = jwt.sign({ to: email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+      // Enviar email
+      const SendMail = require('../utils/sendMail');
+      const templateEmail = require('../utils/templateEmail');
+      const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:8080'}/admins/verify-email?token=${token}&to=${encodeURIComponent(email)}`;
+      const html = templateEmail.template(admin.nombre, verificationUrl);
+      await SendMail.sendMail(email, 'Verifica tu correo de administrador', admin.nombre, `/admins/verify-email`);
+      return { status: true, message: 'Correo de verificación enviado', previewUrl: verificationUrl };
+    } catch (error) {
+      return { status: false, message: 'Error al reenviar el correo de verificación', error };
     }
   }
 }

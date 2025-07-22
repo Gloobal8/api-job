@@ -1,4 +1,9 @@
 const Admin = require("../models/Admin");
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
+const SendMail = require('../utils/sendMail');
+const templateEmail = require('../utils/templateEmail');
+const bcrypt = require('bcryptjs');
 
 // Get all admins
 exports.getAllAdmins = async (req, res) => {
@@ -45,7 +50,7 @@ exports.getAdminById = async (req, res) => {
 // Create a new admin
 exports.addAdmin = async (req, res) => {
   try {
-    const { nombre, apellido, correo, rolId } = req.body;
+    const { nombre, apellido, correo, rolId, password, confirmPassword } = req.body;
     
     // Validar campos requeridos
     if (!nombre || !apellido || !correo || !rolId) {
@@ -54,13 +59,40 @@ exports.addAdmin = async (req, res) => {
         message: "Todos los campos son requeridos (nombre, apellido, correo, rolId)"
       });
     }
+    // Validar contraseña solo al crear
+    if (!password || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "La contraseña y la verificación son requeridas"
+      });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "La contraseña debe tener al menos 6 caracteres"
+      });
+    }
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Las contraseñas no coinciden"
+      });
+    }
 
-    const result = await Admin.create({ nombre, apellido, correo, rolId });
+    const result = await Admin.create({ nombre, apellido, correo, rolId, password });
     
     if (result.status) {
+      // Enviar email de verificación automáticamente
+      let emailWarning = '';
+      try {
+        await SendMail.sendMail(correo, 'Verifica tu correo de administrador', nombre, '/admins/verify-email');
+      } catch (mailError) {
+        console.error('Error enviando el correo de verificación:', mailError);
+        emailWarning = ' (Administrador creado, pero no se pudo enviar el correo de verificación. Contacte al soporte.)';
+      }
       res.status(201).json({
         success: true,
-        message: result.message,
+        message: result.message + '. Se ha enviado un correo de verificación.' + emailWarning,
         data: result.data
       });
     } else {
@@ -83,7 +115,6 @@ exports.editAdmin = async (req, res) => {
   try {
     const { nombre, apellido, correo, rolId } = req.body;
     const result = await Admin.update(req.params.id, { nombre, apellido, correo, rolId });
-    
     if (result.status) {
       res.json({
         success: true,
@@ -127,5 +158,57 @@ exports.deleteAdmin = async (req, res) => {
       message: "Error al eliminar el administrador",
       error: error.message 
     });
+  }
+}; 
+
+// Verificar email de administrador
+exports.verifyAdminEmail = (req, res) => {
+  const token = req.body.token;
+  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+    if (err) {
+      return res.status(201).send({
+        type: 'expired',
+        message: 'Token de verificación inválido o expirado.',
+        status: false
+      });
+    }
+    const email = decoded.to;
+    const adminModel = await Admin.verifyEmail(email);
+    res.status(201).json(adminModel);
+  });
+};
+
+// Reenviar verificación de email de administrador
+exports.resendAdminVerification = async (req, res) => {
+  const email = req.body.email;
+  const data = await Admin.resendVerification(email);
+  res.status(201).json(data);
+}; 
+
+// Login de administrador
+exports.adminLogin = async (req, res) => {
+  const { correo, password } = req.body;
+  if (!correo || !password) {
+    return res.status(400).json({ status: false, message: 'Correo y contraseña son requeridos' });
+  }
+  try {
+    const adminsCollection = require('../config/db').db.collection('admins');
+    const admin = await adminsCollection.findOne({ correo: correo.toLowerCase(), activo: true });
+    if (!admin) {
+      return res.status(401).json({ status: false, message: 'Credenciales inválidas' });
+    }
+    if (!admin.verified) {
+      return res.status(403).json({ status: false, message: 'Debes verificar tu correo antes de iniciar sesión.' });
+    }
+    const passwordMatch = await bcrypt.compare(password, admin.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ status: false, message: 'Credenciales inválidas' });
+    }
+    // Generar token de sesión si lo deseas
+    // const jwt = require('jsonwebtoken');
+    // const token = jwt.sign({ id: admin._id, correo: admin.correo }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    return res.status(200).json({ status: true, message: 'Login exitoso', admin: { ...admin, password: undefined } });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: 'Error en el servidor', error: error.message });
   }
 }; 

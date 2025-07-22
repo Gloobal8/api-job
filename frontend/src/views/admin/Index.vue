@@ -1,6 +1,12 @@
 <template>
   <v-container>
-    <h1>Dashboard Admin</h1>
+    <div class="d-flex align-center mb-4">
+      <h1 class="mr-auto">Dashboard Admin</h1>
+      <v-btn color="error" dark @click="logoutAdmin">
+        <v-icon left>mdi-logout</v-icon>
+        Cerrar sesión
+      </v-btn>
+    </div>
     <v-tabs v-model="tab" color="deep-blue accent-4" class="my-5">
       <v-tab value="admins">Administradores</v-tab>
       <v-tab value="rols">Roles</v-tab>
@@ -109,6 +115,10 @@ export default {
     },
     deleteProfile(item) {
       // Logic for deleting a profile
+    },
+    logoutAdmin() {
+      localStorage.removeItem('admin');
+      this.$router.push('/admin/login');
     },
   },
 };

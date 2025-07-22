@@ -31,6 +31,26 @@
         {{ item.rol.role }}
       </template>
 
+      <template v-slot:item.verified="{ item }">
+        <v-chip v-if="item.verified" color="success" dark>
+          <v-icon left small>mdi-check-circle</v-icon>
+          &nbsp;Verificado
+        </v-chip>
+        <v-chip v-else-if="item.activo && item.emailVerificationSentAt" color="orange" dark>
+          <v-icon left small>mdi-timer-sand</v-icon>
+          <span v-if="countdowns[item._id] !== undefined">
+            Verifica tu correo: {{ formatCountdown(countdowns[item._id]) }}
+          </span>
+          <span v-else>
+            Pendiente de verificación
+          </span>
+        </v-chip>
+        <v-chip v-else color="error" dark>
+          <v-icon left small>mdi-close-circle</v-icon>
+          &nbsp;No verificado
+        </v-chip>
+      </template>
+
       <template v-slot:item.actions="{ item }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -101,6 +121,44 @@
                     label="Rol*"
                     required
                   ></v-combobox>
+                </v-col>
+                <v-col cols="12" v-if="!isEdit">
+                  <v-text-field
+                    v-model="formData.password"
+                    :rules="[rules.required, rules.minPassword]"
+                    label="Contraseña*"
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="showPassword = !showPassword"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" v-if="!isEdit">
+                  <v-text-field
+                    v-model="formData.confirmPassword"
+                    :rules="[rules.required, v => v === formData.password || 'Las contraseñas no coinciden']"
+                    label="Verificar Contraseña*"
+                    :type="showPassword ? 'text' : 'password'"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" v-if="isEdit">
+                  <v-text-field
+                    v-model="formData.password"
+                    :rules="[rules.minPasswordOptional]"
+                    label="Nueva Contraseña (opcional)"
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="showPassword = !showPassword"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" v-if="isEdit">
+                  <v-text-field
+                    v-model="formData.confirmPassword"
+                    :rules="[v => !formData.password || v === formData.password || 'Las contraseñas no coinciden']"
+                    label="Verificar Nueva Contraseña (opcional)"
+                    :type="showPassword ? 'text' : 'password'"
+                  ></v-text-field>
                 </v-col>
               </v-row>
             </v-form>
@@ -191,13 +249,19 @@ export default {
         { text: 'Apellido', value: 'apellido', sortable: true },
         { text: 'Correo', value: 'correo', sortable: true },
         { text: 'Rol', value: 'rolId', sortable: true },
+        { text: 'Verificado', value: 'verified', sortable: true },
         { text: 'Acciones', value: 'actions', sortable: false, align: 'center' }
       ],
       rules: {
         required: v => !!v || 'Este campo es requerido',
         minLength: v => (v && v.length >= 2) || 'Mínimo 2 caracteres',
-        email: v => /.+@.+\..+/.test(v) || 'El correo debe ser válido'
-      }
+        email: v => /.+@.+\..+/.test(v) || 'El correo debe ser válido',
+        minPassword: v => (v && v.length >= 6) || 'Mínimo 6 caracteres',
+        minPasswordOptional: v => !v || v.length >= 6 || 'Mínimo 6 caracteres',
+      },
+      showPassword: false,
+      countdowns: {},
+      countdownInterval: null,
     };
   },
   computed: {
@@ -210,7 +274,7 @@ export default {
     })
   },
   methods: {
-    ...mapActions([
+    ...mapActions('admin', [
       'getAllAdmins',
       'getAllRoles',
       'addAdmin',
@@ -222,7 +286,9 @@ export default {
         nombre: '',
         apellido: '',
         correo: '',
-        rolId: ''
+        rolId: '',
+        password: '',
+        confirmPassword: ''
       };
     },
     openModal() {
@@ -269,15 +335,24 @@ export default {
       try {
         this.loading = true;
         if (this.isEdit) {
-          await this.editAdminAction(this.formData);
+          // Solo enviar password si se ha editado
+          const dataToSend = { ...this.formData };
+          if (!dataToSend.password) {
+            delete dataToSend.password;
+            delete dataToSend.confirmPassword;
+          }
+          await this.editAdminAction(dataToSend);
           this.showMessage('Administrador actualizado exitosamente');
         } else {
-          await this.addAdmin(this.formData);
-          this.showMessage('Administrador creado exitosamente');
+          const { password, confirmPassword, ...rest } = this.formData;
+          const response = await this.addAdmin({ ...rest, password, confirmPassword });
+          // Mostrar mensaje de éxito siempre que la petición no falle
+          this.showMessage('Administrador creado exitosamente. Revisa tu bandeja de entrada para verificar el correo.', 'success');
         }
         this.closeModal();
         this.loadData();
       } catch (error) {
+        // Solo mostrar error si realmente falla la petición
         this.showMessage(error.response?.data?.message || 'Error al guardar el administrador', 'error');
       } finally {
         this.loading = false;
@@ -305,15 +380,57 @@ export default {
           this.getAllAdmins(),
           this.getAllRoles()
         ]);
+        this.startCountdowns();
       } catch (error) {
         this.showMessage('Error al cargar los datos', 'error');
       } finally {
         this.loading = false;
       }
+    },
+    startCountdowns() {
+      if (this.countdownInterval) clearInterval(this.countdownInterval);
+      this.updateCountdowns();
+      this.countdownInterval = setInterval(this.updateCountdowns, 1000);
+    },
+    updateCountdowns() {
+      const now = new Date();
+      this.countdowns = {};
+      this.admins.forEach(admin => {
+        if (admin.activo && !admin.verified && admin.emailVerificationSentAt) {
+          const sentAt = new Date(admin.emailVerificationSentAt);
+          const expiresAt = new Date(sentAt.getTime() + 24 * 60 * 60 * 1000);
+          const diff = expiresAt - now;
+          this.countdowns[admin._id] = diff > 0 ? diff : 0;
+          // Si el admin es el logueado y el tiempo expiró, cerrar sesión
+          if (diff <= 0 && this.isCurrentAdmin(admin)) {
+            this.logoutAdmin();
+          }
+        }
+      });
+    },
+    formatCountdown(ms) {
+      if (ms <= 0) return '00:00:00';
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(totalSeconds % 60).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    },
+    isCurrentAdmin(admin) {
+      // Compara el admin con el logueado (ajusta según cómo guardes el admin logueado)
+      const current = JSON.parse(localStorage.getItem('admin'));
+      return current && (current._id === admin._id || current.correo === admin.correo);
+    },
+    logoutAdmin() {
+      localStorage.removeItem('admin');
+      this.$router.push('/admin/login');
     }
   },
   mounted() {
     this.loadData();
+  },
+  beforeDestroy() {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 };
 </script>

@@ -16,5 +16,8 @@ router.get("/admins/:id", adminController.getAdminById);
 router.post("/admins/create", adminController.addAdmin);
 router.put("/admins/:id", adminController.editAdmin);
 router.delete("/admins/:id", adminController.deleteAdmin);
+router.post('/verify-email', adminController.verifyAdminEmail);
+router.post('/resend-verification', adminController.resendAdminVerification);
+router.post('/login', adminController.adminLogin);
 
 module.exports = router;
