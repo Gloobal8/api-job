@@ -239,7 +239,7 @@ export default {
     })
   },
   methods: {
-    ...mapActions([
+    ...mapActions('admin', [
       'getAllAdmins',
       'getAllRoles',
       'addAdmin',
@@ -344,6 +344,10 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    logoutAdmin() {
+      localStorage.removeItem('admin');
+      this.$router.push('/admin/login');
     }
   },
   mounted() {

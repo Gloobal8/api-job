@@ -30,6 +30,7 @@ import PackagesView from "../views/admin/PackagesView.vue";
 import VerifyEmail from "../views/VerifyEmail.vue";
 import AdminsView from "@/components/admin/Admins.vue";
 import VerifyAdminEmail from "../views/admin/VerifyAdminEmail.vue";
+import AdminLoginView from "../views/admin/LoginView.vue";
 
 console.log({
   archive: "router/index.js",
@@ -232,6 +233,11 @@ const routes = [
     component: () => import("../views/admin/Index.vue")
   },
   {
+    path: "/admin/login",
+    name: "admin-login",
+    component: AdminLoginView,
+  },
+  {
     path: "/admin/packages",
     name: "AdminPackagesView",
     component: () => import("../views/admin/PackagesView.vue"),
@@ -326,6 +332,21 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+});
+
+// Navigation guard for /admin
+router.beforeEach((to, from, next) => {
+  const admin = JSON.parse(localStorage.getItem('admin'));
+  if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
+    // Check if admin is logged in and verified
+    if (!admin || !admin.verified) {
+      return next({ path: '/admin/login', query: { redirect: to.fullPath } });
+    }
+  }
+  if (to.path === '/admin/login' && admin && admin.verified) {
+    return next({ path: '/admin' });
+  }
+  next();
 });
 
 router.beforeEach((to, from, next) => {

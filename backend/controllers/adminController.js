@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const SendMail = require('../utils/sendMail');
 const templateEmail = require('../utils/templateEmail');
+const bcrypt = require('bcryptjs');
 
 // Get all admins
 exports.getAllAdmins = async (req, res) => {
@@ -183,4 +184,32 @@ exports.resendAdminVerification = async (req, res) => {
   const email = req.body.email;
   const data = await Admin.resendVerification(email);
   res.status(201).json(data);
+}; 
+
+// Login de administrador
+exports.adminLogin = async (req, res) => {
+  const { correo, password } = req.body;
+  if (!correo || !password) {
+    return res.status(400).json({ status: false, message: 'Correo y contraseña son requeridos' });
+  }
+  try {
+    const adminsCollection = require('../config/db').db.collection('admins');
+    const admin = await adminsCollection.findOne({ correo: correo.toLowerCase(), activo: true });
+    if (!admin) {
+      return res.status(401).json({ status: false, message: 'Credenciales inválidas' });
+    }
+    if (!admin.verified) {
+      return res.status(403).json({ status: false, message: 'Debes verificar tu correo antes de iniciar sesión.' });
+    }
+    const passwordMatch = await bcrypt.compare(password, admin.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ status: false, message: 'Credenciales inválidas' });
+    }
+    // Generar token de sesión si lo deseas
+    // const jwt = require('jsonwebtoken');
+    // const token = jwt.sign({ id: admin._id, correo: admin.correo }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    return res.status(200).json({ status: true, message: 'Login exitoso', admin: { ...admin, password: undefined } });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: 'Error en el servidor', error: error.message });
+  }
 }; 

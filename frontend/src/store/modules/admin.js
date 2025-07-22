@@ -143,6 +143,19 @@ const actions = {
     }
   },
 
+  async adminLogin({ commit }, { correo, password }) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.post('/admins/login', { correo, password });
+      return response;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al iniciar sesión como administrador');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
   // Clear error action
   clearError({ commit }) {
     commit('SET_ERROR', null);
@@ -165,6 +178,7 @@ const mutations = {
 };
 
 export default {
+  namespaced: true,
   state,
   getters,
   actions,
