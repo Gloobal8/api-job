@@ -31,6 +31,12 @@
         {{ item.rol.role }}
       </template>
 
+      <template v-slot:item.verified="{ item }">
+        <v-chip :color="item.verified ? 'success' : 'error'" dark>
+          <v-icon left small>{{ item.verified ? 'mdi-check-circle' : 'mdi-close-circle' }}</v-icon>
+        </v-chip>
+      </template>
+
       <template v-slot:item.actions="{ item }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -101,6 +107,26 @@
                     label="Rol*"
                     required
                   ></v-combobox>
+                </v-col>
+                <v-col cols="12" v-if="!isEdit">
+                  <v-text-field
+                    v-model="formData.password"
+                    :rules="[rules.required, rules.minPassword]"
+                    label="Contraseña*"
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append-inner="showPassword = !showPassword"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" v-if="!isEdit">
+                  <v-text-field
+                    v-model="formData.confirmPassword"
+                    :rules="[rules.required, v => v === formData.password || 'Las contraseñas no coinciden']"
+                    label="Verificar Contraseña*"
+                    :type="showPassword ? 'text' : 'password'"
+                    required
+                  ></v-text-field>
                 </v-col>
               </v-row>
             </v-form>
@@ -191,13 +217,16 @@ export default {
         { text: 'Apellido', value: 'apellido', sortable: true },
         { text: 'Correo', value: 'correo', sortable: true },
         { text: 'Rol', value: 'rolId', sortable: true },
+        { text: 'Verificado', value: 'verified', sortable: true },
         { text: 'Acciones', value: 'actions', sortable: false, align: 'center' }
       ],
       rules: {
         required: v => !!v || 'Este campo es requerido',
         minLength: v => (v && v.length >= 2) || 'Mínimo 2 caracteres',
-        email: v => /.+@.+\..+/.test(v) || 'El correo debe ser válido'
-      }
+        email: v => /.+@.+\..+/.test(v) || 'El correo debe ser válido',
+        minPassword: v => (v && v.length >= 6) || 'Mínimo 6 caracteres',
+      },
+      showPassword: false,
     };
   },
   computed: {
@@ -222,7 +251,9 @@ export default {
         nombre: '',
         apellido: '',
         correo: '',
-        rolId: ''
+        rolId: '',
+        password: '',
+        confirmPassword: ''
       };
     },
     openModal() {
@@ -272,12 +303,15 @@ export default {
           await this.editAdminAction(this.formData);
           this.showMessage('Administrador actualizado exitosamente');
         } else {
-          await this.addAdmin(this.formData);
-          this.showMessage('Administrador creado exitosamente');
+          const { password, confirmPassword, ...rest } = this.formData;
+          const response = await this.addAdmin({ ...rest, password, confirmPassword });
+          // Mostrar mensaje de éxito siempre que la petición no falle
+          this.showMessage('Administrador creado exitosamente. Revisa tu bandeja de entrada para verificar el correo.', 'success');
         }
         this.closeModal();
         this.loadData();
       } catch (error) {
+        // Solo mostrar error si realmente falla la petición
         this.showMessage(error.response?.data?.message || 'Error al guardar el administrador', 'error');
       } finally {
         this.loading = false;

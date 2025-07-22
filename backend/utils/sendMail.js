@@ -3,7 +3,7 @@ const TemplateEmail = require("./templateEmail");
 const jwt = require('jsonwebtoken');
 
 class SendMail {
-    static async sendMail(to, subject, name) {
+    static async sendMail(to, subject, name, verificationPath = '/verify-email') {
         let transporter = nodemailer.createTransport({
             host: process.env.SMTP,
             port: process.env.SMTP_PORT, 
@@ -22,7 +22,7 @@ class SendMail {
 
         const token = jwt.sign({ to }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}&to=${encodeURIComponent(to)}`;
+        const verificationLink = `${process.env.FRONTEND_URL}${verificationPath}?token=${token}&to=${encodeURIComponent(to)}`;
 
         let mailOptions = {
             from: `"Gloobal Jobs" <${process.env.EMAIL}>`,

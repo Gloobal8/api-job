@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dbClient = require('../config/db');
 const { ObjectId } = require('mongodb');
+const bcrypt = require('bcryptjs');
 
 const adminSchema = new mongoose.Schema({
   nombre: {
@@ -29,6 +30,10 @@ const adminSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
     required: [true, 'El rol es requerido']
+  },
+  password: {
+    type: String,
+    required: false // Solo requerido al crear
   },
   activo: {
     type: Boolean,
@@ -98,13 +103,23 @@ class Admin {
         };
       }
 
+      // Hash de la contraseña si viene en adminData
+      let hashedPassword = undefined;
+      if (adminData.password) {
+        hashedPassword = await bcrypt.hash(adminData.password, 10);
+      }
       // Preparar el documento a insertar
       const newAdmin = {
         ...adminData,
+        password: hashedPassword,
         activo: true,
         createdAt: new Date(),
         updatedAt: new Date()
       };
+      // No guardar el campo password si no se provee
+      if (!adminData.password) {
+        delete newAdmin.password;
+      }
 
       const result = await adminsCollection.insertOne(newAdmin);
 
@@ -244,6 +259,48 @@ class Admin {
     } catch (error) {
       console.error('Error deleting admin:', error);
       throw `Error/Admin.js: ${error}`;
+    }
+  }
+
+  static async verifyEmail(email) {
+    try {
+      const adminsCollection = dbClient.db.collection('admins');
+      const admin = await adminsCollection.findOne({ correo: email.toLowerCase(), activo: true });
+      if (!admin) {
+        return { status: false, message: 'Administrador no encontrado' };
+      }
+      if (admin.verified) {
+        return { status: true, message: 'El correo ya ha sido verificado', data: admin };
+      }
+      await adminsCollection.updateOne({ correo: email.toLowerCase() }, { $set: { verified: true, updatedAt: new Date() } });
+      return { status: true, message: 'Correo de administrador verificado exitosamente', data: { ...admin, verified: true } };
+    } catch (error) {
+      return { status: false, message: 'Error al verificar el correo de administrador', error };
+    }
+  }
+
+  static async resendVerification(email) {
+    try {
+      const adminsCollection = dbClient.db.collection('admins');
+      const admin = await adminsCollection.findOne({ correo: email.toLowerCase(), activo: true });
+      if (!admin) {
+        return { status: false, message: 'Administrador no encontrado' };
+      }
+      if (admin.verified) {
+        return { status: true, message: 'El correo ya ha sido verificado', data: admin };
+      }
+      // Generar token de verificación
+      const jwt = require('jsonwebtoken');
+      const token = jwt.sign({ to: email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+      // Enviar email
+      const sendMail = require('../utils/sendMail');
+      const templateEmail = require('../utils/templateEmail');
+      const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:8080'}/admins/verify-email?token=${token}&to=${encodeURIComponent(email)}`;
+      const html = templateEmail.getVerificationEmail({ name: admin.nombre, url: verificationUrl });
+      await sendMail(email, 'Verifica tu correo de administrador', html);
+      return { status: true, message: 'Correo de verificación enviado', previewUrl: verificationUrl };
+    } catch (error) {
+      return { status: false, message: 'Error al reenviar el correo de verificación', error };
     }
   }
 }

@@ -29,6 +29,7 @@ import TestimonialsAdmin from "@/views/admin/TestimonialsAdmin.vue";
 import PackagesView from "../views/admin/PackagesView.vue";
 import VerifyEmail from "../views/VerifyEmail.vue";
 import AdminsView from "@/components/admin/Admins.vue";
+import VerifyAdminEmail from "../views/admin/VerifyAdminEmail.vue";
 
 console.log({
   archive: "router/index.js",
@@ -265,6 +266,11 @@ const routes = [
       requiresAuth: true,
       requiresAdmin: true,
     },
+  },
+  {
+    path: "/admins/verify-email",
+    name: "verify-admin-email",
+    component: VerifyAdminEmail,
   },
 
   // Custom Fields

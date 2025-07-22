@@ -45,6 +45,10 @@ const actions = {
       commit('SET_LOADING', true);
       const response = await axios.post('/admins/admins/create', adminData);
       await dispatch('getAllAdmins');
+      console.log({
+        archive: 'frontend/src/store/modules/admin.js',
+        response: response.data
+      });
       return response.data;
     } catch (error) {
       commit('SET_ERROR', error.response?.data?.message || 'Error al crear administrador');
