@@ -1,79 +1,198 @@
 <template>
   <div>
-    <v-data-table
-      :headers="adminHeaders"
-      :items="admins"
-      :search="adminSearch"
-      :loading="loading"
-      class="elevation-1"
-    >
-      <template v-slot:top>
-        <v-toolbar flat>
-          <v-toolbar-title>Administradores</v-toolbar-title>
-          <v-divider class="mx-4" inset vertical></v-divider>
-          <v-spacer></v-spacer>
-          <v-text-field
-            v-model="adminSearch"
-            append-icon="mdi-magnify"
-            label="Buscar"
-            single-line
-            hide-details
-            class="mr-4"
-          ></v-text-field>
-          <v-btn color="primary" dark @click="openModal">
-            <v-icon left>mdi-plus</v-icon>
+    <v-card elevation="0" class="mb-4">
+      <v-card-text class="d-flex" style="justify-content: space-between">
+        <div class="d-flex flex-column align-start">
+          <div class="text-caption text-uppercase mb-1">Administradores</div>
+          <div class="text-h4 font-weight-bold">Administradores</div>
+        </div>
+        <div class="d-flex align-center">
+          <v-btn color="primary" size="large" class="mx-2" prepend-icon="mdi-plus" @click="openModal">
             Nuevo Administrador
           </v-btn>
-        </v-toolbar>
-      </template>
-
-      <template v-slot:item.rol="{ item }">
-        {{ item.rol.role }}
-      </template>
-
-      <template v-slot:item.verified="{ item }">
-        <v-chip v-if="item.verified" color="success" dark>
-          <v-icon left small>mdi-check-circle</v-icon>
-          &nbsp;Verificado
-        </v-chip>
-        <v-chip v-else-if="item.activo && item.emailVerificationSentAt" color="orange" dark>
-          <v-icon left small>mdi-timer-sand</v-icon>
-          <span v-if="countdowns[item._id] !== undefined">
-            Verifica tu correo: {{ formatCountdown(countdowns[item._id]) }}
-          </span>
-          <span v-else>
-            Pendiente de verificación
-          </span>
-        </v-chip>
-        <v-chip v-else color="error" dark>
-          <v-icon left small>mdi-close-circle</v-icon>
-          &nbsp;No verificado
-        </v-chip>
-      </template>
-
-      <template v-slot:item.actions="{ item }">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click="editAdmin(item)" class="mr-2">
-              <v-icon small>mdi-pencil</v-icon>
-            </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+    <v-card>
+      <v-card-text>
+        <v-data-table
+          v-model="selected"
+          :headers="headers.filter(h => h.visible)"
+          :items="admins"
+          :search="adminSearch"
+          :loading="loading"
+          :items-per-page="10"
+          show-select
+          class="elevation-0"
+          @update:modelValue="handleSelectionChange"
+        >
+          <template v-slot:top>
+            <v-toolbar flat color="white">
+              <v-toolbar-title class="text-h5 font-weight-bold">
+                Administradores ({{ admins.length }})
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-menu v-model="menuColumns" :close-on-content-click="false" :persistent="false">
+                <template v-slot:activator="{ props }">
+                  <v-btn icon v-bind="props">
+                    <v-icon color="primary">mdi-eye-outline</v-icon>
+                  </v-btn>
+                </template>
+                <v-card class="column-selector">
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-title>
+                        <v-checkbox
+                          v-model="selectAllColumns"
+                          :indeterminate="indeterminateColumns"
+                          label="Todas"
+                          hide-details
+                          density="compact"
+                          @click.stop="toggleSelectAllColumns"
+                        ></v-checkbox>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item v-for="header in headers" :key="header.value">
+                      <v-list-item-title>
+                        <v-checkbox
+                          v-model="header.visible"
+                          :label="header.text"
+                          hide-details
+                          density="compact"
+                          :disabled="header.locked"
+                          @click.stop
+                        ></v-checkbox>
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </v-toolbar>
           </template>
-          <span>Editar</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click="confirmDelete(item)">
-              <v-icon small>mdi-delete</v-icon>
-            </v-btn>
-          </template>
-          <span>Eliminar</span>
-        </v-tooltip>
-      </template>
 
-      <template v-slot:no-data>
-        <v-alert type="info" class="ma-2">No hay administradores disponibles</v-alert>
-      </template>
-    </v-data-table>
+          <template v-slot:headers="{ columns }">
+            <tr>
+              <th class="ps-3" style="width: 48px;"></th>
+              <th v-for="column in columns.slice(1)" :key="column.key" style="cursor: pointer">
+                <div style="display: inline-block">
+                  {{ column.text }}
+                </div>
+              </th>
+            </tr>
+            <tr>
+              <th class="ps-3" style="background-color: whitesmoke; width: 48px;">
+                <v-checkbox
+                  v-model="selectAll"
+                  :indeterminate="indeterminate"
+                  @click="toggleSelectAll(admins)"
+                  hide-details
+                  density="compact"
+                  aria-label="Seleccionar todos"
+                ></v-checkbox>
+              </th>
+              <th v-for="column in columns.slice(1)" :key="column.key" style="background-color: whitesmoke">
+                <template v-if="column.value === 'verified'">
+                  <v-select
+                    v-model="filters.verified"
+                    :items="[
+                      { title: 'Todos', value: '' },
+                      { title: 'Verificado', value: 'true' },
+                      { title: 'No verificado', value: 'false' }
+                    ]"
+                    item-title="title"
+                    item-value="value"
+                    label="Verificado"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    class="mt-1"
+                    clearable
+                    elevation="1"
+                    bg-color="white"
+                    style="font-size: 0.75rem"
+                    @update:model-value="applyTableFilters"
+                  ></v-select>
+                </template>
+                <v-text-field
+                  v-else-if="column.value !== 'actions'"
+                  v-model="filters[column.value]"
+                  :label="column.text"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="mt-1"
+                  clearable
+                  elevation="1"
+                  bg-color="white"
+                  style="font-size: 0.75rem"
+                  @update:model-value="applyTableFilters"
+                ></v-text-field>
+              </th>
+            </tr>
+          </template>
+
+          <template v-slot:item="{ item }">
+            <tr>
+              <td class="ps-3">
+                <v-checkbox
+                  :model-value="selected"
+                  :value="item"
+                  hide-details
+                  density="compact"
+                  @update:model-value="handleSelectionChange"
+                ></v-checkbox>
+              </td>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.apellido }}</td>
+              <td>{{ item.correo }}</td>
+              <td>{{ item.rolId }}</td>
+              <td>
+                <v-chip v-if="item.verified" color="success" dark>
+                  <v-icon left small>mdi-check-circle</v-icon>
+                  &nbsp;Verificado
+                </v-chip>
+                <v-chip v-else-if="item.activo && item.emailVerificationSentAt" color="orange" dark>
+                  <v-icon left small>mdi-timer-sand</v-icon>
+                  <span v-if="countdowns[item._id] !== undefined">
+                    Verifica tu correo: {{ formatCountdown(countdowns[item._id]) }}
+                  </span>
+                  <span v-else>
+                    Pendiente de verificación
+                  </span>
+                </v-chip>
+                <v-chip v-else color="error" dark>
+                  <v-icon left small>mdi-close-circle</v-icon>
+                  &nbsp;No verificado
+                </v-chip>
+              </td>
+              <td>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="editAdmin(item)" class="mr-2">
+                      <v-icon small>mdi-pencil</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Editar</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="confirmDelete(item)">
+                      <v-icon small>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Eliminar</span>
+                </v-tooltip>
+              </td>
+            </tr>
+          </template>
+
+          <template v-slot:no-data>
+            <v-alert type="info" class="ma-2">No hay administradores disponibles</v-alert>
+          </template>
+        </v-data-table>
+      </v-card-text>
+    </v-card>
 
     <!-- Dialog para crear/editar administrador -->
     <v-dialog v-model="modal" max-width="600px">
@@ -244,14 +363,27 @@ export default {
         text: '',
         color: 'success'
       },
-      adminHeaders: [
-        { text: 'Nombre', value: 'nombre', sortable: true },
-        { text: 'Apellido', value: 'apellido', sortable: true },
-        { text: 'Correo', value: 'correo', sortable: true },
-        { text: 'Rol', value: 'rolId', sortable: true },
-        { text: 'Verificado', value: 'verified', sortable: true },
-        { text: 'Acciones', value: 'actions', sortable: false, align: 'center' }
+      headers: [
+        { text: 'Nombre', value: 'nombre', sortable: true, visible: true },
+        { text: 'Apellido', value: 'apellido', sortable: true, visible: true },
+        { text: 'Correo', value: 'correo', sortable: true, visible: true },
+        { text: 'Rol', value: 'rolId', sortable: true, visible: true },
+        { text: 'Verificado', value: 'verified', sortable: true, visible: true },
+        { text: 'Acciones', value: 'actions', sortable: false, align: 'center', visible: true }
       ],
+      selectAll: false,
+      selectAllColumns: false,
+      indeterminate: false,
+      indeterminateColumns: false,
+      filters: {
+        nombre: '',
+        apellido: '',
+        correo: '',
+        rolId: '',
+        verified: '',
+      },
+      selected: [],
+      menuColumns: false,
       rules: {
         required: v => !!v || 'Este campo es requerido',
         minLength: v => (v && v.length >= 2) || 'Mínimo 2 caracteres',
@@ -266,12 +398,32 @@ export default {
   },
   computed: {
     ...mapState({
-      admins: state => state.admin.admins,
+      adminsRaw: state => state.admin.admins,
       roles: state => {
         const rolesArray = state.admin.roles.map(rol => rol.nombreRol);
         return rolesArray;
       }
-    })
+    }),
+    admins() {
+      // Filtrado reactivo por cada campo
+      return this.adminsRaw.filter(admin => {
+        const nombre = this.filters.nombre.trim().toLowerCase();
+        const apellido = this.filters.apellido.trim().toLowerCase();
+        const correo = this.filters.correo.trim().toLowerCase();
+        const rolId = this.filters.rolId.trim().toLowerCase();
+        const verified = this.filters.verified;
+        let match = true;
+        if (nombre && !admin.nombre.toLowerCase().includes(nombre)) match = false;
+        if (apellido && !admin.apellido.toLowerCase().includes(apellido)) match = false;
+        if (correo && !admin.correo.toLowerCase().includes(correo)) match = false;
+        if (rolId && String(admin.rolId).toLowerCase().indexOf(rolId) === -1) match = false;
+        if (verified !== '' && verified !== null) {
+          if (verified === 'true' && !admin.verified) match = false;
+          if (verified === 'false' && admin.verified) match = false;
+        }
+        return match;
+      });
+    },
   },
   methods: {
     ...mapActions('admin', [
@@ -395,7 +547,7 @@ export default {
     updateCountdowns() {
       const now = new Date();
       this.countdowns = {};
-      this.admins.forEach(admin => {
+      this.adminsRaw.forEach(admin => {
         if (admin.activo && !admin.verified && admin.emailVerificationSentAt) {
           const sentAt = new Date(admin.emailVerificationSentAt);
           const expiresAt = new Date(sentAt.getTime() + 24 * 60 * 60 * 1000);
@@ -424,6 +576,25 @@ export default {
     logoutAdmin() {
       localStorage.removeItem('admin');
       this.$router.push('/admin/login');
+    },
+    handleSelectionChange(value) {
+      this.selected = value;
+      this.selectAll = value.length === this.admins.length && this.admins.length > 0;
+      this.indeterminate = value.length > 0 && value.length < this.admins.length;
+    },
+    toggleSelectAll(items) {
+      this.selected = items;
+      this.selectAll = items.length === this.admins.length && this.admins.length > 0;
+      this.indeterminate = items.length > 0 && items.length < this.admins.length;
+    },
+    toggleSelectAllColumns() {
+      this.headers.forEach(header => {
+        header.visible = this.selectAllColumns;
+      });
+      this.indeterminateColumns = false;
+    },
+    applyTableFilters() {
+      // No es necesario, el filtrado es reactivo en computed: admins
     }
   },
   mounted() {

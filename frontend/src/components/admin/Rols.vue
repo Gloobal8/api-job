@@ -1,55 +1,155 @@
 <template>
   <div>
-    <v-data-table
-      :headers="roleHeaders"
-      :items="roles"
-      :search="roleSearch"
-      :loading="loading"
-      class="elevation-1"
-    >
-      <template v-slot:top>
-        <v-toolbar flat>
-          <v-toolbar-title>Roles</v-toolbar-title>
-          <v-divider class="mx-4" inset vertical></v-divider>
-          <v-spacer></v-spacer>
-          <v-text-field
-            v-model="roleSearch"
-            append-icon="mdi-magnify"
-            label="Buscar"
-            single-line
-            hide-details
-            class="mr-4"
-          ></v-text-field>
-          <v-btn color="primary" dark @click="openModal">
-            <v-icon left>mdi-plus</v-icon>
+    <v-card elevation="0" class="mb-4">
+      <v-card-text class="d-flex" style="justify-content: space-between">
+        <div class="d-flex flex-column align-start">
+          <div class="text-caption text-uppercase mb-1">Roles</div>
+          <div class="text-h4 font-weight-bold">Roles</div>
+        </div>
+        <div class="d-flex align-center">
+          <v-btn color="primary" size="large" class="mx-2" prepend-icon="mdi-plus" @click="openModal">
             Nuevo Rol
           </v-btn>
-        </v-toolbar>
-      </template>
-
-      <template v-slot:item.actions="{ item }">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click="editRole(item)" class="mr-2">
-              <v-icon small>mdi-pencil</v-icon>
-            </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+    <v-card>
+      <v-card-text>
+        <v-data-table
+          v-model="selected"
+          :headers="headers.filter(h => h.visible)"
+          :items="filteredRoles"
+          :search="roleSearch"
+          :loading="loading"
+          :items-per-page="10"
+          show-select
+          class="elevation-0"
+          @update:modelValue="handleSelectionChange"
+        >
+          <template v-slot:top>
+            <v-toolbar flat color="white">
+              <v-toolbar-title class="text-h5 font-weight-bold">
+                Roles ({{ filteredRoles.length }})
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-menu v-model="menuColumns" :close-on-content-click="false" :persistent="false">
+                <template v-slot:activator="{ props }">
+                  <v-btn icon v-bind="props">
+                    <v-icon color="primary">mdi-eye-outline</v-icon>
+                  </v-btn>
+                </template>
+                <v-card class="column-selector">
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-title>
+                        <v-checkbox
+                          v-model="selectAllColumns"
+                          :indeterminate="indeterminateColumns"
+                          label="Todas"
+                          hide-details
+                          density="compact"
+                          @click.stop="toggleSelectAllColumns"
+                        ></v-checkbox>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item v-for="header in headers" :key="header.value">
+                      <v-list-item-title>
+                        <v-checkbox
+                          v-model="header.visible"
+                          :label="header.text"
+                          hide-details
+                          density="compact"
+                          :disabled="header.locked"
+                          @click.stop
+                        ></v-checkbox>
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </v-toolbar>
           </template>
-          <span>Editar</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click="confirmDelete(item)">
-              <v-icon small>mdi-delete</v-icon>
-            </v-btn>
-          </template>
-          <span>Eliminar</span>
-        </v-tooltip>
-      </template>
 
-      <template v-slot:no-data>
-        <v-alert type="info" class="ma-2">No hay roles disponibles</v-alert>
-      </template>
-    </v-data-table>
+          <template v-slot:headers="{ columns }">
+            <tr>
+              <th class="ps-3" style="width: 48px;"></th>
+              <th v-for="column in columns.slice(1)" :key="column.key" style="cursor: pointer">
+                <div style="display: inline-block">
+                  {{ column.text }}
+                </div>
+              </th>
+            </tr>
+            <tr>
+              <th class="ps-3" style="background-color: whitesmoke; width: 48px;">
+                <v-checkbox
+                  v-model="selectAll"
+                  :indeterminate="indeterminate"
+                  @click="toggleSelectAll(filteredRoles)"
+                  hide-details
+                  density="compact"
+                  aria-label="Seleccionar todos"
+                ></v-checkbox>
+              </th>
+              <th v-for="column in columns.slice(1)" :key="column.key" style="background-color: whitesmoke">
+                <v-text-field
+                  v-if="column.value !== 'actions'"
+                  v-model="filters[column.value]"
+                  :label="column.text"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="mt-1"
+                  clearable
+                  elevation="1"
+                  bg-color="white"
+                  style="font-size: 0.75rem"
+                  @update:model-value="applyTableFilters"
+                ></v-text-field>
+              </th>
+            </tr>
+          </template>
+
+          <template v-slot:item="{ item }">
+            <tr>
+              <td class="ps-3">
+                <v-checkbox
+                  :model-value="selected"
+                  :value="item"
+                  hide-details
+                  density="compact"
+                  @update:model-value="handleSelectionChange"
+                ></v-checkbox>
+              </td>
+              <td>{{ item.nombreRol }}</td>
+              <td>{{ item.descripcion }}</td>
+              <td>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="editRole(item)" class="mr-2">
+                      <v-icon small>mdi-pencil</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Editar</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="confirmDelete(item)">
+                      <v-icon small>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Eliminar</span>
+                </v-tooltip>
+              </td>
+            </tr>
+          </template>
+
+          <template v-slot:no-data>
+            <v-alert type="info" class="ma-2">No hay roles disponibles</v-alert>
+          </template>
+        </v-data-table>
+      </v-card-text>
+    </v-card>
 
     <!-- Dialog para crear/editar rol -->
     <v-dialog v-model="modal" max-width="600px">
@@ -162,11 +262,21 @@ export default {
         text: '',
         color: 'success'
       },
-      roleHeaders: [
-        { text: 'Nombre del Rol', value: 'nombreRol', sortable: true },
-        { text: 'Descripción', value: 'descripcion', sortable: true },
-        { text: 'Acciones', value: 'actions', sortable: false, align: 'center' }
+      headers: [
+        { text: 'Nombre del Rol', value: 'nombreRol', sortable: true, visible: true },
+        { text: 'Descripción', value: 'descripcion', sortable: true, visible: true },
+        { text: 'Acciones', value: 'actions', sortable: false, align: 'center', visible: true }
       ],
+      selectAll: false,
+      selectAllColumns: false,
+      indeterminate: false,
+      indeterminateColumns: false,
+      filters: {
+        nombreRol: '',
+        descripcion: ''
+      },
+      selected: [],
+      menuColumns: false,
       rules: {
         required: v => !!v || 'Este campo es requerido',
         minLength: v => (v && v.length >= 3) || 'Mínimo 3 caracteres',
@@ -176,8 +286,19 @@ export default {
   },
   computed: {
     ...mapState({
-      roles: state => state.admin.roles
-    })
+      rolesRaw: state => Array.isArray(state.admin.roles) ? state.admin.roles : []
+    }),
+    filteredRoles() {
+      // Filtrado reactivo por nombre y descripción
+      return this.rolesRaw.filter(role => {
+        const nombreRol = this.filters.nombreRol.trim().toLowerCase();
+        const descripcion = this.filters.descripcion.trim().toLowerCase();
+        let match = true;
+        if (nombreRol && !role.nombreRol.toLowerCase().includes(nombreRol)) match = false;
+        if (descripcion && !role.descripcion.toLowerCase().includes(descripcion)) match = false;
+        return match;
+      });
+    }
   },
   methods: {
     ...mapActions([
@@ -271,6 +392,27 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    handleSelectionChange(value) {
+      this.selected = Array.isArray(value) ? value : [];
+      const total = Array.isArray(this.filteredRoles) ? this.filteredRoles.length : 0;
+      this.selectAll = this.selected.length === total && total > 0;
+      this.indeterminate = this.selected.length > 0 && this.selected.length < total;
+    },
+    toggleSelectAll(items) {
+      this.selected = Array.isArray(items) ? items : [];
+      const total = Array.isArray(this.filteredRoles) ? this.filteredRoles.length : 0;
+      this.selectAll = this.selected.length === total && total > 0;
+      this.indeterminate = this.selected.length > 0 && this.selected.length < total;
+    },
+    toggleSelectAllColumns() {
+      this.headers.forEach(header => {
+        header.visible = this.selectAllColumns;
+      });
+      this.indeterminateColumns = false;
+    },
+    applyTableFilters() {
+      // No es necesario, el filtrado es reactivo en computed: filteredRoles
     }
   },
   mounted() {
