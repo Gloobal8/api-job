@@ -1,4 +1,5 @@
 import { createStore } from "vuex";
+import { set } from "vue";
 import axios from "axios";
 import customFields from "./modules/customFields";
 import localization from "./modules/localization";
@@ -9,6 +10,8 @@ import snackbar from "./modules/snackbar";
 import jobs from "./modules/jobs";
 import admin from './modules/admin';
 import modules from './modules/modules';
+import permissions from './modules/permissions';
+
 
 export default createStore({
   state: {
@@ -35,7 +38,8 @@ export default createStore({
     snackbar,
     jobs,
     admin,
-    modules
+    modules,
+    permissions
     // Otros módulos...
   },
   mutations: {
@@ -77,7 +81,7 @@ export default createStore({
         (e) => e.id === updatedEducation.id
       );
       if (index !== -1) {
-        Vue.set(state.userEducation, index, updatedEducation);
+        set(state.userEducation, index, updatedEducation);
       }
     },
     REMOVE_EDUCATION(state, id) {
@@ -91,7 +95,7 @@ export default createStore({
         (e) => e.id === updatedExperience.id
       );
       if (index !== -1) {
-        Vue.set(state.userExperience, index, updatedExperience);
+        set(state.userExperience, index, updatedExperience);
       }
     },
     REMOVE_EXPERIENCE(state, id) {
@@ -117,7 +121,7 @@ export default createStore({
     },
   },
   actions: {
-    async login({ commit }, credentials) {
+    async login({ commit, dispatch }, credentials) {
       try {
         commit("SET_LOADING", true);
         const response = await axios.post("/auth/login", credentials);
@@ -125,9 +129,24 @@ export default createStore({
           archive: 'store/index',
           response
         })
-        commit("SET_USER", response.data?.data?.user);
-        commit("SET_TOKEN", response.data?.data?.token);
+        
+        const user = response.data?.data?.user;
+        const token = response.data?.data?.token;
+        
+        commit("SET_USER", user);
+        commit("SET_TOKEN", token);
         commit("SET_ERROR", null);
+        
+        // Si el usuario tiene un rol, establecerlo en el módulo de permisos
+        if (user && user.roleId) {
+          console.log('🔐 Usuario logueado con rol:', user.roleId);
+          try {
+            await dispatch('permissions/setUserRole', user.roleId, { root: true });
+          } catch (permError) {
+            console.warn('⚠️ No se pudieron cargar los permisos del rol:', permError);
+          }
+        }
+        
         return response;
       } catch (error) {
         commit(

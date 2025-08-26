@@ -146,7 +146,7 @@
               <td>{{ item.nombre }}</td>
               <td>{{ item.apellido }}</td>
               <td>{{ item.correo }}</td>
-              <td>{{ item.rolId }}</td>
+                                <td>{{ getRoleName(item.rolId) }}</td>
               <td>
                 <v-chip v-if="item.verified" color="success" dark>
                   <v-icon left small>mdi-check-circle</v-icon>
@@ -233,6 +233,8 @@
                   <v-combobox
                     v-model="formData.rolId"
                     :items="roles"
+                    item-value="_id"
+                    item-title="nombreRol"
                     :return-object="false"
                     dense
                     outlined
@@ -400,8 +402,7 @@ export default {
     ...mapState({
       adminsRaw: state => state.admin.admins,
       roles: state => {
-        const rolesArray = state.admin.roles.map(rol => rol.nombreRol);
-        return rolesArray;
+        return state.admin.roles;
       }
     }),
     admins() {
@@ -416,7 +417,13 @@ export default {
         if (nombre && !admin.nombre.toLowerCase().includes(nombre)) match = false;
         if (apellido && !admin.apellido.toLowerCase().includes(apellido)) match = false;
         if (correo && !admin.correo.toLowerCase().includes(correo)) match = false;
-        if (rolId && String(admin.rolId).toLowerCase().indexOf(rolId) === -1) match = false;
+        if (rolId) {
+          // Buscar el rol por nombre para el filtrado
+          const role = this.roles.find(r => r._id === admin.rolId);
+          if (role && !role.nombreRol.toLowerCase().includes(rolId)) {
+            match = false;
+          }
+        }
         if (verified !== '' && verified !== null) {
           if (verified === 'true' && !admin.verified) match = false;
           if (verified === 'false' && admin.verified) match = false;
@@ -595,6 +602,11 @@ export default {
     },
     applyTableFilters() {
       // No es necesario, el filtrado es reactivo en computed: admins
+    },
+    
+    getRoleName(roleId) {
+      const role = this.roles.find(r => r._id === roleId);
+      return role ? role.nombreRol : roleId || 'N/A';
     }
   },
   mounted() {

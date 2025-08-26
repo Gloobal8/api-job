@@ -63,6 +63,37 @@ adminSchema.pre('save', function(next) {
 });
 
 class Admin {
+  static async getById(id) {
+    try {
+      const adminsCollection = dbClient.db.collection('admins');
+      const admin = await adminsCollection.findOne({ 
+        _id: new ObjectId(id),
+        activo: true 
+      });
+      
+      if (!admin) {
+        return {
+          status: false,
+          message: 'Administrador no encontrado'
+        };
+      }
+      
+      // Convertir ObjectId a string para la respuesta
+      const adminWithStringId = {
+        ...admin,
+        rolId: admin.rolId ? admin.rolId.toString() : admin.rolId
+      };
+      
+      return {
+        status: true,
+        data: adminWithStringId
+      };
+    } catch (error) {
+      console.error('Error getting admin by id:', error);
+      throw `Error/Admin.js: ${error}`;
+    }
+  }
+
   static async getAll() {
     try {
       const adminsCollection = dbClient.db.collection('admins');
@@ -85,9 +116,15 @@ class Admin {
           message: 'No se encontraron administradores'
         };
       }
+      // Convertir ObjectIds a strings para la respuesta
+      const adminsWithStringIds = activos.map(admin => ({
+        ...admin,
+        rolId: admin.rolId ? admin.rolId.toString() : admin.rolId
+      }));
+      
       return {
         status: true,
-        data: activos
+        data: adminsWithStringIds
       };
     } catch (error) {
       console.error('Error getting admin:', error);
@@ -120,6 +157,7 @@ class Admin {
       // Preparar el documento a insertar
       const newAdmin = {
         ...adminData,
+        rolId: new ObjectId(adminData.rolId), // Convertir a ObjectId
         password: hashedPassword,
         activo: true,
         verified: false,
@@ -187,6 +225,7 @@ class Admin {
       }
       const updateData = {
         ...adminData,
+        rolId: adminData.rolId ? new ObjectId(adminData.rolId) : undefined, // Convertir a ObjectId si existe
         updatedAt: new Date()
       };
       if (correoCambiado) {
@@ -206,12 +245,18 @@ class Admin {
         { $set: updateData }
       );
       if (result.modifiedCount === 1) {
+        // Convertir ObjectId a string para la respuesta
+        const updatedData = {
+          ...updateData,
+          rolId: updateData.rolId ? updateData.rolId.toString() : updateData.rolId
+        };
+        
         return {
           status: true,
           message: 'Administrador actualizado exitosamente',
           data: {
             _id: id,
-            ...updateData
+            ...updatedData
           }
         };
       }
@@ -313,5 +358,4 @@ class Admin {
   }
 }
 
-module.exports = mongoose.model('Admin', adminSchema);
 module.exports = Admin; 

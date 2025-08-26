@@ -207,7 +207,14 @@ exports.adminLogin = async (req, res) => {
     // Generar token de sesión si lo deseas
     // const jwt = require('jsonwebtoken');
     // const token = jwt.sign({ id: admin._id, correo: admin.correo }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    return res.status(200).json({ status: true, message: 'Login exitoso', admin: { ...admin, password: undefined } });
+    // Convertir ObjectId a string para la respuesta
+    const adminResponse = {
+      ...admin,
+      password: undefined,
+      rolId: admin.rolId ? admin.rolId.toString() : admin.rolId
+    };
+    
+    return res.status(200).json({ status: true, message: 'Login exitoso', admin: adminResponse });
   } catch (error) {
     return res.status(500).json({ status: false, message: 'Error en el servidor', error: error.message });
   }

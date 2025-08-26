@@ -49,6 +49,8 @@ const paymentRoutes = require("./routes/payments");
 const invoiceRoutes = require("./routes/invoices");
 const couponRoutes = require("./routes/coupons");
 const moduleRoutes = require("./routes/modules");
+const permissionRoutes = require("./routes/permissions");
+
 // Importar middleware y rutas de localización
 const languageMiddleware = require("./middleware/languageMiddleware");
 const localizationRoutes = require("./routes/localization");
@@ -108,6 +110,8 @@ app.use("/api/blog", blogRoutes);
 app.use("/api/rols", rolsAndAdminRoutes);
 app.use("/api/admins", rolsAndAdminRoutes);
 app.use("/api/modules", moduleRoutes);
+app.use("/api/permissions", permissionRoutes);
+
 
 // New package and payment routes
 app.use("/api/packages", packageRoutes);

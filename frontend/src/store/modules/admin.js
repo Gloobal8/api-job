@@ -101,6 +101,33 @@ const actions = {
     }
   },
 
+  // Permission actions
+  async getRolePermissions({ commit }, roleId) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.get(`/permissions/role/${roleId}`);
+      return response.data.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al obtener permisos del rol');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
+  async saveRolePermissions({ commit }, { roleId, permissions }) {
+    try {
+      commit('SET_LOADING', true);
+      const response = await axios.post('/permissions/bulk-create', { roleId, permissions });
+      return response.data;
+    } catch (error) {
+      commit('SET_ERROR', error.response?.data?.message || 'Error al guardar permisos del rol');
+      throw error;
+    } finally {
+      commit('SET_LOADING', false);
+    }
+  },
+
   async addRole({ commit, dispatch }, roleData) {
     try {
       commit('SET_LOADING', true);
